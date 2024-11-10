@@ -8,21 +8,7 @@ import threading
 import subprocess
 import select
 
-# Custom server interface that accepts any authentication attempt
-class NoAuthSSHServer(paramiko.ServerInterface):
-    def check_auth_none(self, username):
-        return paramiko.AUTH_SUCCESSFUL  # Always accept password
-
-    def check_channel_request(self, kind, chanid):
-        if kind == 'session':
-            return paramiko.OPEN_SUCCEEDED
-        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
-
-    def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
-        return True
-
-    def check_channel_shell_request(self, channel):
-        return True
+from src.ssh_server_auth_none import SSHServerAuthNone
 
 def handle_client(client_socket):
     # Use Paramiko to handle SSH client connections
@@ -31,7 +17,7 @@ def handle_client(client_socket):
     host_key = paramiko.RSAKey(filename='ssh-keys/ssh_host_rsa_key')
     transport.add_server_key(host_key)
 
-    server = NoAuthSSHServer()
+    server = SSHServerAuthNone()
     transport.start_server(server=server)
 
     # Additional code to handle SSH sessions
