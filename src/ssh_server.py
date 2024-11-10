@@ -14,23 +14,8 @@ class SSHServer(SSHServerBase):
 
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 
-    def connection_function(self, client):
+    def connection_function(self, client, session, channel):
         try:
-            # create the SSH transport object
-            session = paramiko.Transport(client)
-            session.add_server_key(self._host_key)
-
-            # start the SSH server
-            try:
-                session.start_server(server=self._server)
-            except paramiko.SSHException:
-                return
-            channel = session.accept()
-            if channel is None:
-                print("No channel request.")
-                session.close()
-                return
-
             # Use pty to create a pseudo-terminal for the subprocess
             master_fd, slave_fd = pty.openpty()
             proc = subprocess.Popen('/usr/bin/htop', shell=True, stdin=slave_fd, stdout=slave_fd, stderr=slave_fd, close_fds=True)
@@ -60,7 +45,6 @@ class SSHServer(SSHServerBase):
                         output = os.read(master_fd, 1024)
                         if output:
                             channel.send(output)
-
 
             # Close the channel and transport after session ends
             channel.close()

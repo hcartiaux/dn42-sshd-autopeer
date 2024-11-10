@@ -65,7 +65,23 @@ class SSHServerBase(ABC):
                 self._socket.listen()
                 client, addr = self._socket.accept()
                 print(f"Accepted connection from {addr}")
-                self.connection_function(client)
+
+                # create the SSH transport object
+                session = paramiko.Transport(client)
+                session.add_server_key(self._host_key)
+
+                # start the SSH server
+                try:
+                    session.start_server(server=self._server)
+                except paramiko.SSHException:
+                    return
+                channel = session.accept()
+                if channel is None:
+                    print("No channel request.")
+                    session.close()
+                    return
+
+                self.connection_function(client, session, channel)
             except socket.timeout:
                 pass
 
