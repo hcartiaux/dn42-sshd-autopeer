@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from sys import platform
+import paramiko
 import socket, threading
 
 class SSHServerBase(ABC):
@@ -21,6 +22,9 @@ class SSHServerBase(ABC):
         # connections and data.
         self._listen_thread = None
 
+    def set_server_interface(self, server_interface):
+        self._server = server_interface
+
     # To start the server, we open the socket and create
     # the listening thread.
     def start(self, address='::1', port=22, timeout=1):
@@ -39,6 +43,10 @@ class SSHServerBase(ABC):
 
             self._listen_thread = threading.Thread(target=self._listen)
             self._listen_thread.start()
+
+        if not isinstance(self._server, paramiko.ServerInterface):
+            from src.ssh_server_auth_none import SSHServerAuthNone
+            self._server = SSHServerAuthNone()
 
     # To stop the server, we must join the listen thread
     # and close the socket.

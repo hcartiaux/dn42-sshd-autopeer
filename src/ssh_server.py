@@ -14,19 +14,15 @@ class SSHServer(SSHServerBase):
 
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 
-
     def connection_function(self, client):
         try:
             # create the SSH transport object
             session = paramiko.Transport(client)
             session.add_server_key(self._host_key)
 
-            # create the server
-            server = SSHServerAuthNone()
-
             # start the SSH server
             try:
-                session.start_server(server=server)
+                session.start_server(server=self._server)
             except paramiko.SSHException:
                 return
             channel = session.accept()
