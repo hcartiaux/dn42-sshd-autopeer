@@ -1,9 +1,12 @@
 import os
-from src.ssh_server import SSHServer
+from src.ssh_server_pipe import SSHServerPipe
 from src.ssh_server_auth_none import SSHServerAuthNone
 
 if __name__ == '__main__':
-    server = SSHServer(os.path.dirname(os.path.realpath(__file__)) + "/ssh-keys/ssh_host_rsa_key")
+    cmd = 'htop'
+    host_key_file = os.path.dirname(os.path.realpath(__file__)) + "/ssh-keys/ssh_host_rsa_key"
+
+    server = SSHServerPipe(cmd, host_key_file)
 
     server.set_server_interface(SSHServerAuthNone())
 
