@@ -1,7 +1,8 @@
+import paramiko
+
+import socket, threading
 from abc import ABC, abstractmethod
 from sys import platform
-import paramiko
-import socket, threading
 
 class SSHServerBase(ABC):
 
