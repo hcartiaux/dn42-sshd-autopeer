@@ -48,9 +48,5 @@ class SSHServerPipe(SSHServerBase):
                         if data:
                             channel.send(data)
 
-            # Close the channel and transport after session ends
-            channel.close()
-            session.close()
-
         except:
             pass

@@ -82,6 +82,11 @@ class SSHServerBase(ABC):
                     return
 
                 self.connection_function(client, session, channel)
+
+                # Close the channel and transport after session ends
+                channel.close()
+                session.close()
+
             except socket.timeout:
                 pass
 
