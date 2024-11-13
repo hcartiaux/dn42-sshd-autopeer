@@ -20,7 +20,7 @@ class SSHServerAuthNone(paramiko.ServerInterface):
         return True
 
     def get_banner(self):
-        motd_path = os.getenv('SSH_MOTD_PATH', '')
+        motd_path = os.getenv('SSH_MOTD_PATH', '/etc/motd')
         if Path(motd_path).is_file():
             return (Path(motd_path).read_text(), 'en-US')
         else:
