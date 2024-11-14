@@ -6,7 +6,6 @@ import subprocess
 import select
 
 from src.ssh_server_base      import SSHServerBase
-from src.ssh_server_auth_none import SSHServerAuthNone
 
 class SSHServerPipe(SSHServerBase):
 
