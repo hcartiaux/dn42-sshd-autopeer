@@ -80,7 +80,7 @@ class SSHServerBase(ABC):
                 if channel is None:
                     print("No channel request.")
                     session.close()
-                    return
+                    continue
 
                 self.connection_function(client, session, channel)
 
