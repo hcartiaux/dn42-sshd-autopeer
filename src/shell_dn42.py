@@ -3,7 +3,7 @@ from io import StringIO
 from rich.console import Console
 from rich.table import Table
 
-class Shell(Cmd):
+class ShellDn42(Cmd):
 
     # Message to be output when cmdloop() is called.
     intro='Custom SSH Shell. Type help or ? to list commands.\r\n'
@@ -25,7 +25,7 @@ class Shell(Cmd):
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
     def __init__(self, stdin=None, stdout=None):
         # call the base constructor of cmd.Cmd, with our own stdin and stdout
-        super(Shell, self).__init__(stdin=stdin, stdout=stdout)
+        super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
 
     def default(self, line):
         self.sanitized_printline('*** Unknown syntax: ' + line)
