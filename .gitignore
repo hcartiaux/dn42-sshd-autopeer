@@ -1,2 +1,3 @@
-__pycache__/
-ssh-keys/
+__pycache__
+files/ssh-keys
+files/registry
