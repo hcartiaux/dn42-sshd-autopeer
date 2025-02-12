@@ -4,12 +4,10 @@ import os
 import base64
 from pathlib import Path
 
-DN42_REGISTRY_DIRECTORY = '/home/hcartiaux/repos/perso/git.dn42.dev/dn42/registry/'
-
 def load_authorized_keys(user):
     authorized_keys = []
     try:
-        with open(DN42_REGISTRY_DIRECTORY + "/data/mntner/" + user.upper() + "-MNT", 'r') as file:
+        with open(os.environ['DN42_REGISTRY_DIRECTORY'] + "/data/mntner/" + user.upper() + "-MNT", 'r') as file:
             for line in file:
                 l = line.strip().split()
                 if len(l) >= 3 and l[0] == 'auth:':
@@ -53,7 +51,7 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
         return True
 
     def get_banner(self):
-        motd_path = os.getenv('SSH_MOTD_PATH', '/etc/motd')
+        motd_path = os.environ['SSH_MOTD_PATH']
         if Path(motd_path).is_file():
             return (Path(motd_path).read_text(), 'en-US')
         else:
