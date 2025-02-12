@@ -6,12 +6,12 @@ from rich.table import Table
 class ShellDn42(Cmd):
 
     # Message to be output when cmdloop() is called.
-    intro='Custom SSH Shell. Type help or ? to list commands.\r\n'
+    intro='AS4242420263 SSH Shell. Type help or ? to list commands.\r\n'
 
     # The prompt property can be overridden, allowing us to use a custom
     # string to be displayed at the beginning of each line. This will not
     # be included in any input that we get.
-    prompt='\r\nMy Shell> '
+    prompt='\r\nAS4242420263> '
     doc_header='Documented commands (type help <topic>):'
     undoc_header='Undocumented commands:'
     misc_header='Misc help sections:'
