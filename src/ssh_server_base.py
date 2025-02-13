@@ -65,7 +65,7 @@ class SSHServerBase(ABC):
             try:
                 self._socket.listen()
                 client, addr = self._socket.accept()
-                print(f"Accepted connection from {addr}")
+                print(f"[SSHServerBase] Accepted connection from {addr}")
 
                 # create the SSH transport object
                 session = paramiko.Transport(client)
@@ -78,7 +78,7 @@ class SSHServerBase(ABC):
                     return
                 channel = session.accept()
                 if channel is None:
-                    print("No channel request.")
+                    print(f"[SSHServerBase] No channel request from {addr}")
                     session.close()
                     continue
 
