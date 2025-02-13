@@ -2,6 +2,7 @@ import paramiko
 
 import os
 import base64
+import re
 from pathlib import Path
 
 def load_authorized_keys(user):
@@ -28,12 +29,15 @@ def load_authorized_keys(user):
 # Custom server interface that accepts dn42 maintainers
 class SSHServerAuthDn42(paramiko.ServerInterface):
     def check_auth_publickey(self, username, key):
-        authorized_keys = load_authorized_keys(username)
-        for authorized_key in authorized_keys:
-            if authorized_key == key:
-                print(f"Authentication successful for {username} with key {key}")
-                return paramiko.AUTH_SUCCESSFUL
-        print(f"Authentication failed for {username}")
+        if not re.match("^[A-Za-z0-9-]+$", username):
+            print(f"[AuthDn42] Username {username} contains forbidden characters")
+        else:
+            authorized_keys = load_authorized_keys(username)
+            for authorized_key in authorized_keys:
+                if authorized_key == key:
+                    print(f"[AuthDn42] Authentication successful for {username} with key {key}")
+                    return paramiko.AUTH_SUCCESSFUL
+            print(f"[AuthDn42] Authentication failed for {username}")
         return paramiko.AUTH_FAILED
 
     def get_allowed_auths(self, username):
