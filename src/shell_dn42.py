@@ -35,9 +35,13 @@ class ShellDn42(Cmd):
     # Constructor that will allow us to set out own stdin and stdout.
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
     def __init__(self, username, stdin=None, stdout=None):
-        # call the base constructor of cmd.Cmd, with our own stdin and stdout
         self.__username = username
 
+        # Allowed chars
+        self.__allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_ ")
+        self.__allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
+
+        # call the base constructor of cmd.Cmd, with our own stdin and stdout
         super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
 
     def default(self, line):
@@ -47,8 +51,10 @@ class ShellDn42(Cmd):
         """Reads an input until Enter is pressed"""
         line=''
         while True:
-            ch = self.stdin.read(1).decode('utf-8')
-            if ch == '\r' or ch == '\n':  # Enter key
+            ch = self.stdin.read(1).decode("utf-8", "ignore")
+            if ch not in self.__allowed_chars:
+                pass
+            elif ch == '\r' or ch == '\n':  # Enter key
                 self.stdout.write('\r\n')  # Move to the next line
                 break
             elif ch == '\x7f' and len(line) > 0:  # Backspace key
