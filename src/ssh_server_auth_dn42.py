@@ -9,6 +9,8 @@ from src.utils_dn42 import load_authorized_keys
 
 # Custom server interface that accepts dn42 maintainers
 class SSHServerAuthDn42(paramiko.ServerInterface):
+    username = ''
+
     def check_auth_publickey(self, username, key):
         if not re.match("^[A-Za-z0-9-]+$", username):
             print(f"[AuthDn42] Username {username} contains forbidden characters")
@@ -17,6 +19,7 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
             for authorized_key in authorized_keys:
                 if authorized_key == key:
                     print(f"[AuthDn42] Authentication successful for {username} with key {key}")
+                    self.username = username
                     return paramiko.AUTH_SUCCESSFUL
             print(f"[AuthDn42] Authentication failed for {username}")
         return paramiko.AUTH_FAILED

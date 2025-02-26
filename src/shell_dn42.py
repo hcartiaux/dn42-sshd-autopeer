@@ -9,6 +9,8 @@ class ShellDn42(Cmd):
     # Cmd class properties
     #############
 
+    username = ""
+
     # Message to be output when cmdloop() is called.
     intro='AS4242420263 SSH Shell. Type help or ? to list commands.\r\n'
 
@@ -32,8 +34,9 @@ class ShellDn42(Cmd):
 
     # Constructor that will allow us to set out own stdin and stdout.
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
-    def __init__(self, stdin=None, stdout=None):
+    def __init__(self, username, stdin=None, stdout=None):
         # call the base constructor of cmd.Cmd, with our own stdin and stdout
+        self.username = username
         super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
 
     def default(self, line):
