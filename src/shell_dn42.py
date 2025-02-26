@@ -11,8 +11,6 @@ class ShellDn42(Cmd):
     # Cmd class properties
     #############
 
-    username = ""
-
     # Message to be output when cmdloop() is called.
     intro='AS4242420263 SSH Shell. Type help or ? to list commands.\r\n'
 
@@ -38,7 +36,8 @@ class ShellDn42(Cmd):
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
     def __init__(self, username, stdin=None, stdout=None):
         # call the base constructor of cmd.Cmd, with our own stdin and stdout
-        self.username = username
+        self.__username = username
+
         super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
 
     def default(self, line):
@@ -155,7 +154,7 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        as_nums = as_maintained_by(self.username)
+        as_nums = as_maintained_by(self.__username)
 
         table = Table(title="Your AS numbers")
         table.add_column("AS list", style="cyan", no_wrap=True)
