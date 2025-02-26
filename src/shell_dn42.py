@@ -129,17 +129,6 @@ class ShellDn42(Cmd):
     # Custom shell commands
     #############
 
-    # To create a command that is executable in our shell, we create functions
-    # that are prefixed with do_ and contains the argument arg.
-    # For example, if we want the command 'greet', we create do_greet().
-    # If we want greet to take a name as well, we pass it as an arg.
-    def do_greet(self, arg):
-        "Greet the user"
-        if arg:
-            self.sanitized_print('Hey {0}! Nice to see you!'.format(arg))
-        else:
-            self.sanitized_print('Hello there!')
-
     # even if you don't use the arg parameter, it must be included.
     def do_bye(self, arg):
         "Quit the current shell"
@@ -149,8 +138,8 @@ class ShellDn42(Cmd):
         # this acts like disconnecting from the shell.
         return True
 
-    def do_starwars(self, arg):
-        table = Table(title="Star Wars Movies")
+    def do_peer_create(self, arg):
+        "Create a new peering session"
 
         table.add_column("Released", style="cyan", no_wrap=True)
         table.add_column("Title", style="magenta")
@@ -162,3 +151,15 @@ class ShellDn42(Cmd):
         table.add_row("Dec 16, 2016", "Rogue One: A Star Wars Story", "$1,332,439,889")
 
         self.rich_print(table)
+
+    def do_peer_list(self, arg):
+        "List your existing peering sessions"
+        self.sanitized_print('Hello there!')
+
+    def do_peer_remove(self, arg):
+        "Remove a peering sessions"
+        self.sanitized_print('Hello there!')
+
+    def do_peer_status(self, arg):
+        "Print the state of a peering sessions"
+        self.sanitized_print('Hello there!')
