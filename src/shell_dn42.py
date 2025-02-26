@@ -168,6 +168,8 @@ class ShellDn42(Cmd):
             table.add_row(as_num)
 
         self.rich_print(table)
+        name = self.rich_prompt("Name: ")
+        self.sanitized_print("Name: " + name)
 
     def do_peer_list(self, arg):
         "List your existing peering sessions"
