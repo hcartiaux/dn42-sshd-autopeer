@@ -45,10 +45,6 @@ class SSHServerBase(ABC):
             self._listen_thread = threading.Thread(target=self._listen)
             self._listen_thread.start()
 
-        if not isinstance(self._server, paramiko.ServerInterface):
-            from src.ssh_server_auth_none import SSHServerAuthNone
-            self._server = SSHServerAuthNone()
-
     # To stop the server, we must join the listen thread
     # and close the socket.
     def stop(self):
