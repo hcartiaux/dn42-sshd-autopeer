@@ -3,6 +3,8 @@ from io import StringIO
 from rich.console import Console
 from rich.table import Table
 
+from src.utils_dn42 import as_maintained_by
+
 class ShellDn42(Cmd):
 
     #############
@@ -144,14 +146,12 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        table.add_column("Released", style="cyan", no_wrap=True)
-        table.add_column("Title", style="magenta")
-        table.add_column("Box Office", justify="right", style="green")
+        as_nums = as_maintained_by(self.username)
 
-        table.add_row("Dec 20, 2019", "Star Wars: The Rise of Skywalker", "$952,110,690")
-        table.add_row("May 25, 2018", "Solo: A Star Wars Story", "$393,151,347")
-        table.add_row("Dec 15, 2017", "Star Wars Ep. V111: The Last Jedi", "$1,332,539,889")
-        table.add_row("Dec 16, 2016", "Rogue One: A Star Wars Story", "$1,332,439,889")
+        table = Table(title="Your AS numbers")
+        table.add_column("AS list", style="cyan", no_wrap=True)
+        for as_num in as_nums:
+            table.add_row(as_num)
 
         self.rich_print(table)
 

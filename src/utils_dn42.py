@@ -22,3 +22,19 @@ def load_authorized_keys(user):
         pass
     return authorized_keys
 
+def as_maintained_by(user):
+    as_nums = []
+
+    directory = os.environ['DN42_REGISTRY_DIRECTORY'] + "/data/aut-num"
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        try:
+            with open(filepath, "r") as file:
+                for line in file:
+                    l = line.strip().split()
+                    if len(l) == 2 and l[0] == 'mnt-by:' and l[1] == user.upper() + "-MNT":
+                        as_nums.append(filename)
+        except:
+            pass
+
+    return as_nums
