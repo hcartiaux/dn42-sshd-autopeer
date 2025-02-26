@@ -5,26 +5,7 @@ import base64
 import re
 from pathlib import Path
 
-def load_authorized_keys(user):
-    authorized_keys = []
-    try:
-        with open(os.environ['DN42_REGISTRY_DIRECTORY'] + "/data/mntner/" + user.upper() + "-MNT", 'r') as file:
-            for line in file:
-                l = line.strip().split()
-                if len(l) >= 3 and l[0] == 'auth:':
-                    key_type = l[1]
-                    key_data = l[2]
-                    if key_type == 'ssh-ed25519':
-                        key = paramiko.Ed25519Key(data=base64.b64decode(key_data))
-                    elif key_type == 'ssh-rsa':
-                        key = paramiko.RSAKey(data=base64.b64decode(key_data))
-                    else:
-                        continue
-                    authorized_keys.append(key)
-    except:
-        pass
-    return authorized_keys
-
+from src.utils_dn42 import load_authorized_keys
 
 # Custom server interface that accepts dn42 maintainers
 class SSHServerAuthDn42(paramiko.ServerInterface):
