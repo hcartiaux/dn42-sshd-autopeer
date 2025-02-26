@@ -44,6 +44,27 @@ class ShellDn42(Cmd):
     def default(self, line):
         self.sanitized_print('*** Unknown syntax: ' + line)
 
+    def prompt_line(self):
+        """Reads an input until Enter is pressed"""
+        line=''
+        while True:
+            ch = self.stdin.read(1).decode('utf-8')
+            if ch == '\r' or ch == '\n':  # Enter key
+                self.stdout.write('\r\n')  # Move to the next line
+                break
+            elif ch == '\x7f' and len(line) > 0:  # Backspace key
+                line = line[:-1]
+                self.stdout.write('\b \b')  # Erase the last character
+            elif ch == '\t':
+                pass
+            elif ch == '\x7f' and len(line) == 0:  # Backspace key
+                pass
+            else:
+                self.stdout.write(ch)  # Echo character
+                line += ch
+        self.stdout.flush()
+        return line
+
     def cmdloop(self, intro=None):
        """Repeatedly issue a prompt, accept input, parse an initial prefix
        off the received input, and dispatch to action methods, passing them
@@ -63,26 +84,7 @@ class ShellDn42(Cmd):
            else:
               self.stdout.write(self.prompt)
               self.stdout.flush()
-
-              line=''
-              while True:
-                  ch = self.stdin.read(1).decode('utf-8')
-                  if ch == '\t':
-                      pass
-                  elif ch == '\r' or ch == '\n':  # Enter key
-                      self.stdout.write('\r\n')  # Move to the next line
-                      break
-                  elif ch == '\x7f' and len(line) > 0:  # Backspace key
-                      self.stdout.write('\b \b')  # Erase the last character
-                      line = line[:-1]
-                  elif ch == '\x7f' and len(line) == 0:  # Backspace key
-                      pass
-                  else:
-                      line += ch
-                      self.stdout.write(ch)  # Echo character
-                  self.stdout.flush()
-
-
+              line = self.prompt_line()
               if not len(line):
                   line = 'EOF'
               else:
@@ -118,17 +120,24 @@ class ShellDn42(Cmd):
             self.stdout.write(value)
             self.stdout.flush()
 
-    def rich_print(self, rich_object):
-        console = Console(force_terminal=True)
-        output = StringIO()
-        console.file = output
-        console.print(rich_object)
-        self.sanitized_print(output.getvalue())
-
     def sanitized_print(self, output):
         clean_output = '\r\n'.join(line.strip() for line in output.splitlines())
         self.print(clean_output + '\r\n')
 
+    def rich_print(self, rich_object, newline=True):
+        console = Console(force_terminal=True)
+        output = StringIO()
+        console.file = output
+        if newline:
+            console.print(rich_object)
+            self.sanitized_print(output.getvalue())
+        else:
+            console.print(rich_object, end='')
+            self.print(output.getvalue())
+
+    def rich_prompt(self, text):
+        self.rich_print(text, newline=False)
+        return self.prompt_line()
 
     #############
     # Custom shell commands
