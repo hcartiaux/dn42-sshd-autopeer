@@ -18,5 +18,9 @@ class SSHServerShell(SSHServerBase):
             # start the shell
             # cmdloop() will block execution of this thread.
             self.client_shell.cmdloop()
+
+            # Close the channel and transport after session ends
+            channel.close()
+            session.close()
         except:
             pass

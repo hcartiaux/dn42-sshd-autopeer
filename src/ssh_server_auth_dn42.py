@@ -18,7 +18,7 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
             authorized_keys = load_authorized_keys(username)
             for authorized_key in authorized_keys:
                 if authorized_key == key:
-                    print(f"[AuthDn42] Authentication successful for {username} with key {key}")
+                    print(f"[AuthDn42] Authentication successful for {username} with {key.algorithm_name} key {key.fingerprint}")
                     self.username = username
                     return paramiko.AUTH_SUCCESSFUL
             print(f"[AuthDn42] Authentication failed for {username}")

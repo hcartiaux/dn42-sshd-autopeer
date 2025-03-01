@@ -31,7 +31,6 @@ class SSHServerBase(ABC):
     def start(self, address='::1', port=22, timeout=1):
         if not self._is_running.is_set():
             self._is_running.set()
-
             self._socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
 
@@ -57,6 +56,7 @@ class SSHServerBase(ABC):
     # We wait for a connection, if a connection is made, we will call
     # our connection function.
     def _listen(self):
+        print("[SSHServerBase] Listening thread started")
         while self._is_running.is_set():
             try:
                 self._socket.listen()
@@ -78,15 +78,13 @@ class SSHServerBase(ABC):
                     session.close()
                     continue
 
-                self.connection_function(client, session, channel)
-
-                # Close the channel and transport after session ends
-                channel.close()
-                session.close()
+                threading.Thread(target=self.connection_function,
+                                 daemon=True,
+                                 args = (client, session, channel)).start()
 
             except socket.timeout:
                 pass
 
     @abstractmethod
-    def connection_function(self, client):
+    def connection_function(self, client, session, channel):
         pass
