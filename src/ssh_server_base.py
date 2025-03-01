@@ -1,5 +1,4 @@
 import paramiko
-
 import socket, threading
 from abc import ABC, abstractmethod
 from sys import platform

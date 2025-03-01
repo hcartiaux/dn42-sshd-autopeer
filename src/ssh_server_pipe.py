@@ -1,5 +1,4 @@
 import paramiko
-
 import os
 import pty
 import subprocess

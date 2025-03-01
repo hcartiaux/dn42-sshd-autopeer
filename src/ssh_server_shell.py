@@ -1,7 +1,6 @@
 import paramiko
 import os
-
-from src.ssh_server_base      import SSHServerBase
+from src.ssh_server_base import SSHServerBase
 
 class SSHServerShell(SSHServerBase):
 
