@@ -1,4 +1,5 @@
 import paramiko
+import os
 
 from src.ssh_server_base      import SSHServerBase
 
@@ -14,7 +15,9 @@ class SSHServerShell(SSHServerBase):
             # create the channel and get the stdio
             stdio = channel.makefile('rwU')
             # create the client shell
-            self.client_shell = self.shell_class(self._server.username, stdio, stdio)
+            self.client_shell = self.shell_class(self._server.username, stdio, stdio,
+                                                 asn=os.environ['ASN'],
+                                                 server=os.environ['SERVER'])
             # start the shell
             # cmdloop() will block execution of this thread.
             self.client_shell.cmdloop()

@@ -11,13 +11,9 @@ class ShellDn42(Cmd):
     # Cmd class properties
     #############
 
-    # Message to be output when cmdloop() is called.
-    intro='AS4242420263 SSH Shell. Type help or ? to list commands.\r\n'
-
     # The prompt property can be overridden, allowing us to use a custom
     # string to be displayed at the beginning of each line. This will not
     # be included in any input that we get.
-    prompt='\r\nAS4242420263> '
     doc_header='Documented commands (type help <topic>):'
     undoc_header='Undocumented commands:'
     misc_header='Misc help sections:'
@@ -34,8 +30,11 @@ class ShellDn42(Cmd):
 
     # Constructor that will allow us to set out own stdin and stdout.
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
-    def __init__(self, username, stdin=None, stdout=None):
-        self.__username = username
+    def __init__(self, username, stdin=None, stdout=None, asn="4242420263", server="nl-ams2.flap42.eu"):
+        self.username = username
+        self.asn      = asn
+        self.server   = server
+        self.prompt='\r\nAS' + asn + '> '
 
         # Allowed chars
         self.__allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_ ")
@@ -70,7 +69,8 @@ class ShellDn42(Cmd):
         self.stdout.flush()
         return line
 
-    def cmdloop(self, intro=None):
+
+    def cmdloop(self, intro=True):
        """Repeatedly issue a prompt, accept input, parse an initial prefix
        off the received input, and dispatch to action methods, passing them
        the remainder of the line as argument.
@@ -78,10 +78,8 @@ class ShellDn42(Cmd):
        """
 
        self.preloop()
-       if intro is not None:
-           self.intro = intro
-       if self.intro:
-           self.stdout.write(str(self.intro)+"\n")
+       if intro:
+           self.do_intro()
        stop = None
        while not stop:
            if self.cmdqueue:
@@ -148,6 +146,25 @@ class ShellDn42(Cmd):
     # Custom shell commands
     #############
 
+    def do_intro(self, arg=None):
+        "Print the introduction message"
+        # Message to be output when cmdloop() is called.
+        self.emptyline()
+        as_nums = as_maintained_by(self.username)
+        text = "You are connected as [bold blue]" + self.username.upper() + "-MNT[/] to [bold yellow]" + self.server + " @ AS" + self.asn
+        self.rich_print(text)
+        self.emptyline()
+        table = Table(style="blue")
+        table.add_column("Your AS number(s)", no_wrap=True)
+        for as_num in as_nums:
+            table.add_row(as_num)
+        self.rich_print(table)
+        self.emptyline()
+        text = "Use this shell to configure your BGP peering session."
+        self.rich_print(text)
+        self.emptyline()
+        self.rich_print('Type help or ? to list commands.')
+
     # even if you don't use the arg parameter, it must be included.
     def do_bye(self, arg):
         "Quit the current shell"
@@ -160,16 +177,11 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        as_nums = as_maintained_by(self.__username)
-
-        table = Table(title="Your AS numbers")
-        table.add_column("AS list", style="cyan", no_wrap=True)
-        for as_num in as_nums:
-            table.add_row(as_num)
-
-        self.rich_print(table)
-        name = self.rich_prompt("Name: ")
-        self.sanitized_print("Name: " + name)
+        as_num =            self.rich_prompt("[bold blue]AS Number                  :[/] ")
+        wg_pub_key =        self.rich_prompt("[bold blue]Wireguard public key       :[/] ")
+        wg_end_point_addr = self.rich_prompt("[bold blue]Wireguard end point address:[/] ")
+        wg_end_point_port = self.rich_prompt("[bold blue]Wireguard end point port   :[/] ")
+        link_local_ipv6 =   self.rich_prompt("[bold blue]Link-local IPv6 address    :[/] ")
 
     def do_peer_list(self, arg):
         "List your existing peering sessions"
