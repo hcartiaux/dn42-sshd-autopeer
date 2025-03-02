@@ -3,8 +3,7 @@ import os
 import pty
 import subprocess
 import select
-
-from src.ssh_server_base      import SSHServerBase
+from src.ssh_server_base import SSHServerBase
 
 class SSHServerPipe(SSHServerBase):
 
