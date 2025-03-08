@@ -37,21 +37,23 @@ class ShellDn42(Cmd):
         self.prompt='\r\nAS' + asn + '> '
 
         # Allowed chars
-        self.__allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_ ")
-        self.__allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
+        self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-. ")
+        self._allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
 
         # call the base constructor of cmd.Cmd, with our own stdin and stdout
         super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
 
     def default(self, line):
-        self.sanitized_print('*** Unknown syntax: ' + line)
+        if line != 'EOF':
+            self.sanitized_print('*** Unknown syntax: ' + line)
 
     def prompt_line(self):
         """Reads an input until Enter is pressed"""
         line=''
-        while True:
+        max_line_length=80
+        while len(line) < max_line_length:
             ch = self.stdin.read(1).decode("utf-8", "ignore")
-            if ch not in self.__allowed_chars:
+            if ch not in self._allowed_chars:
                 pass
             elif ch == '\r' or ch == '\n':  # Enter key
                 self.stdout.write('\r\n')  # Move to the next line
