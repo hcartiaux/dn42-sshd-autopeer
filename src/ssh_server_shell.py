@@ -1,5 +1,6 @@
 import paramiko
 import os
+import logging
 from src.ssh_server_base import SSHServerBase
 
 class SSHServerShell(SSHServerBase):
@@ -21,8 +22,10 @@ class SSHServerShell(SSHServerBase):
             # cmdloop() will block execution of this thread.
             self.client_shell.cmdloop()
 
-            # Close the channel and transport after session ends
-            channel.close()
-            session.close()
         except:
+            logging.exception("Execution error in the shell of " + self._server.username)
             pass
+
+        # Close the channel and transport after session ends
+        channel.close()
+        session.close()

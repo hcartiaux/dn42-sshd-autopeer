@@ -3,6 +3,7 @@ import os
 import pty
 import subprocess
 import select
+import logging
 from src.ssh_server_base import SSHServerBase
 
 class SSHServerPipe(SSHServerBase):
@@ -46,9 +47,9 @@ class SSHServerPipe(SSHServerBase):
                         if data:
                             channel.send(data)
 
-            # Close the channel and transport after session ends
-            channel.close()
-            session.close()
-
         except:
-            pass
+            logging.exception("Execution error")
+
+        # Close the channel and transport after session ends
+        channel.close()
+        session.close()
