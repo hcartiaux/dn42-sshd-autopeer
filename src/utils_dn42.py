@@ -53,3 +53,16 @@ def get_ipv6(host):
         return [rdata.address for rdata in answers]
     except:
         return []
+
+def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
+    return True
+
+def get_peer_list():
+    return ["4242420266", "4242420276"]
+#    return ["4242420263", "4242420264"]
+
+def peer_remove(as_num):
+    return True
+
+def peer_status(as_num=0):
+    pass
