@@ -33,7 +33,7 @@ def as_maintained_by(user):
                 for line in file:
                     l = line.strip().split()
                     if len(l) == 2 and l[0] == 'mnt-by:' and l[1] == user.upper() + "-MNT":
-                        as_nums.append(filename)
+                        as_nums.append(filename[2:])
         except:
             pass
 
