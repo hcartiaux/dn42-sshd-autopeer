@@ -37,7 +37,7 @@ class ShellDn42(Cmd):
         self.prompt='\r\nAS' + asn + '> '
 
         # Allowed chars
-        self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-. ")
+        self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-.+/ ")
         self._allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
 
         # call the base constructor of cmd.Cmd, with our own stdin and stdout
