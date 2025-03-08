@@ -1,9 +1,9 @@
 from cmd import Cmd
 from io import StringIO
+from re import match
 from rich.console import Console
 from rich.table import Table
-
-from src.utils_dn42 import as_maintained_by
+from src.utils_dn42 import *
 
 class ShellDn42(Cmd):
 
@@ -179,19 +179,71 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        as_num =            self.rich_prompt("[bold blue]AS Number                  :[/] ")
-        wg_pub_key =        self.rich_prompt("[bold blue]Wireguard public key       :[/] ")
-        wg_end_point_addr = self.rich_prompt("[bold blue]Wireguard end point address:[/] ")
-        wg_end_point_port = self.rich_prompt("[bold blue]Wireguard end point port   :[/] ")
-        link_local_ipv6 =   self.rich_prompt("[bold blue]Link-local IPv6 address    :[/] ")
+        peer_list = get_peer_list()
+        as_nums = as_maintained_by(self.username)
+        as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
+        if not match('^[0-9]+$', str(as_num)):
+            self.rich_print('[red] :warning: Malformed AS Number (^[0-9]+$)')
+            return
+        elif as_num not in as_nums:
+            self.rich_print('[red] :warning: AS' + as_num + ' is not managed by you')
+            return
+        elif as_num in peer_list:
+            self.rich_print('[red] :warning: Peering session for AS' + as_num + ' already exists.')
+            self.rich_print('[red] :warning: List your peering sessions with [italic]peer_list[/italic], remove with [italic]peer_remove[/italic]')
+            return
+
+        wg_pub_key       = self.rich_prompt("[bold blue]Wireguard public key      :[/] ")
+        if not match('^[0-9a-zA-Z+/]{43}=$', str(wg_pub_key)):
+            self.rich_print('[red] :warning: Malformed WireGuard public key (^[0-9a-zA-Z+/]{43}=$)')
+            return
+
+        wg_endpoint_addr = self.rich_prompt("[bold blue]Wireguard endpoint address:[/] ")
+        if len(get_ipv6(wg_endpoint_addr)) == 0:
+            self.rich_print('[red] :warning: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
+            return
+
+        wg_endpoint_port = self.rich_prompt("[bold blue]Wireguard endpoint port   :[/] ")
+        if not match('^[0-9]+$', str(wg_endpoint_port)):
+            self.rich_print('[red] :warning:  Malformed port number (^[0-9]+$)')
+            return
+
+        if peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
+            self.rich_print('[green]The peering session has been created for AS' + as_num)
+            self.do_peer_config(arg)
+        else:
+            self.rich_print('[red] :warning:  The peering session could not be created for AS' + as_num)
+
+    def do_peer_config(self, arg):
+        "Show your peering session configuration"
+        self.sanitized_print('Hello there!')
 
     def do_peer_list(self, arg):
         "List your existing peering sessions"
-        self.sanitized_print('Hello there!')
+        peer_list = get_peer_list()
+        self.emptyline()
+        table = Table(style="blue")
+        table.add_column("Your existing peering sessions", no_wrap=True)
+        for as_num in peer_list:
+            table.add_row(as_num)
+        self.rich_print(table)
 
     def do_peer_remove(self, arg):
-        "Remove a peering sessions"
-        self.sanitized_print('Hello there!')
+        "Remove an already configured peering session"
+        peer_list = get_peer_list()
+        as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
+        if as_num not in peer_list:
+            self.rich_print('[red] :warning: There is no peering session for this AS')
+            return
+        else:
+            confirm = self.rich_prompt("[bold blue]Do you really want to remove the peering session of AS " + as_num + "? (YES/NO): ")
+            if confirm != 'YES':
+                self.rich_print('[red] :warning: Abort peering session removal')
+            elif peer_remove(as_num):
+                self.rich_print('[bold orange] Peering session of AS' + as_num + ' succesfully removed')
+            else:
+                self.rich_print('[red] :warning: The peering session could not be removed for AS' + as_num)
+
 
     def do_peer_status(self, arg):
         "Print the state of a peering sessions"
