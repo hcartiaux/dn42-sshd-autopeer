@@ -1,4 +1,6 @@
 import os
+import socket
+from dns import resolver
 
 def load_authorized_keys(user):
     import paramiko
@@ -38,3 +40,16 @@ def as_maintained_by(user):
             pass
 
     return as_nums
+
+def get_ipv6(host):
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        return [host]
+    except:
+        pass
+
+    try:
+        answers = resolver.resolve(host, 'AAAA')
+        return [rdata.address for rdata in answers]
+    except:
+        return []
