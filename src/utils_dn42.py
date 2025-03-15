@@ -58,8 +58,19 @@ def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
     return True
 
 def get_peer_list():
-    return ["4242420266", "4242420276"]
-#    return ["4242420263", "4242420264"]
+    peer_list = {}
+    peer_list["4242420266"] = {
+        "wg_pub_key": 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=',
+        "wg_endpoint_addr": '2001:bc8:3feb:100::2',
+        "wg_endpoint_port": '51902',
+    }
+    peer_list["4242420276"] = {
+        "wg_pub_key": 'aa0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=',
+        "wg_endpoint_addr": '2001:bc8:3feb:100::3',
+        "wg_endpoint_port": '51903',
+    }
+
+    return peer_list
 
 def peer_remove(as_num):
     return True

@@ -3,6 +3,7 @@ from io import StringIO
 from re import match
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 from src.utils_dn42 import *
 
 class ShellDn42(Cmd):
@@ -179,7 +180,7 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        peer_list = get_peer_list()
+        peer_list = get_peer_list().keys()
         as_nums = as_maintained_by(self.username)
         as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
         if not match('^[0-9]+$', str(as_num)):
@@ -220,17 +221,19 @@ class ShellDn42(Cmd):
 
     def do_peer_list(self, arg):
         "List your existing peering sessions"
-        peer_list = get_peer_list()
         self.emptyline()
-        table = Table(style="blue")
-        table.add_column("Your existing peering sessions", no_wrap=True)
-        for as_num in peer_list:
-            table.add_row(as_num)
+        table = Table(title="Your existing peering sessions", style="blue")
+        table.add_column("AS number", no_wrap=True)
+        table.add_column("Wireguard public key", no_wrap=True)
+        table.add_column("Endpoint address", no_wrap=True)
+        table.add_column("Endpoint port", no_wrap=True)
+        for as_num, peer_info in get_peer_list().items():
+            table.add_row(as_num, peer_info['wg_pub_key'], Text(peer_info['wg_endpoint_addr']), peer_info['wg_endpoint_port'])
         self.rich_print(table)
 
     def do_peer_remove(self, arg):
         "Remove an already configured peering session"
-        peer_list = get_peer_list()
+        peer_list = get_peer_list().keys()
         as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
         if as_num not in peer_list:
             self.rich_print('[red] :warning: There is no peering session for this AS')
