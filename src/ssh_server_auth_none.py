@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 
 # Custom server interface that accepts any authentication attempt
+
+
 class SSHServerAuthNone(paramiko.ServerInterface):
     def check_auth_none(self, username):
         return paramiko.AUTH_SUCCESSFUL

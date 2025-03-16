@@ -2,7 +2,8 @@ import os
 import socket
 from dns import resolver
 
-### Interrogate the dn42 registry
+# Interrogate the dn42 registry
+
 
 def load_authorized_keys(user):
     import paramiko
@@ -22,9 +23,10 @@ def load_authorized_keys(user):
                     else:
                         continue
                     authorized_keys.append(key)
-    except:
+    except BaseException:
         pass
     return authorized_keys
+
 
 def as_maintained_by(user):
     as_nums = []
@@ -38,27 +40,29 @@ def as_maintained_by(user):
                     l = line.strip().split()
                     if len(l) == 2 and l[0] == 'mnt-by:' and l[1] == user.upper() + "-MNT":
                         as_nums.append(filename[2:])
-        except:
+        except BaseException:
             pass
 
     return as_nums
 
-### Verify host conformity
+# Verify host conformity
+
 
 def get_ipv6(host):
     try:
         socket.inet_pton(socket.AF_INET6, host)
         return [host]
-    except:
+    except BaseException:
         pass
 
     try:
         answers = resolver.resolve(host, 'AAAA')
         return [rdata.address for rdata in answers]
-    except:
+    except BaseException:
         return []
 
-### Interrogate peering info
+# Interrogate peering info
+
 
 def get_local_config(as_num):
     id = get_asn_id(as_num)
@@ -70,11 +74,14 @@ def get_local_config(as_num):
     }
     return local_config
 
+
 def get_asn_id(as_num):
     return 1
 
+
 def get_peer_config(as_num):
     return get_peer_list()[as_num]
+
 
 def get_peer_list():
     peer_list = {}
@@ -95,28 +102,33 @@ def get_peer_list():
 
     return peer_list
 
-### Actions
+# Actions
+
 
 def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
     return True
 
+
 def peer_remove(as_num):
     return True
 
-def peer_status(as_num):
-        wg_cmd = "wg show wg-peer-int"
-        wg_output = os.popen("ssh nl-ams2.flap sudo " + wg_cmd).read()
-        birdc_cmd = "birdc show protocols all ibgp_nl_ams1"
-        birdc_output = os.popen("ssh nl-ams2.flap sudo " + birdc_cmd).read()
-        return "$ " + wg_cmd + "\n" + wg_output + "\n$ " + birdc_cmd + "\n" + birdc_output
 
-### Gen config
+def peer_status(as_num):
+    wg_cmd = "wg show wg-peer-int"
+    wg_output = os.popen("ssh nl-ams2.flap sudo " + wg_cmd).read()
+    birdc_cmd = "birdc show protocols all ibgp_nl_ams1"
+    birdc_output = os.popen("ssh nl-ams2.flap sudo " + birdc_cmd).read()
+    return "$ " + wg_cmd + "\n" + wg_output + \
+        "\n$ " + birdc_cmd + "\n" + birdc_output
+
+# Gen config
+
 
 def gen_wireguard_config(as_num):
-#    local_config = get_local_config(as_num)
-#    peer_config = get_peer_config(as_num)
+    #    local_config = get_local_config(as_num)
+    #    peer_config = get_peer_config(as_num)
 
-    wireguard= """
+    wireguard = """
 [Interface]
 PrivateKey =
 ListenPort = 51823
@@ -131,11 +143,12 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
 """
     return wireguard
 
-def gen_bird_config(as_num):
-#    local_config = get_local_config(as_num)
-#    peer_config = get_peer_config(as_num)
 
-    bird= """
+def gen_bird_config(as_num):
+    #    local_config = get_local_config(as_num)
+    #    peer_config = get_peer_config(as_num)
+
+    bird = """
 protocol bgp whojk_v6 from dnpeers {
     neighbor fe80::2717 as 4242422717;
     interface "wg-peer-whojk";

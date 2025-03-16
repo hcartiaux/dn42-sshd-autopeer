@@ -6,6 +6,7 @@ import select
 import logging
 from src.ssh_server_base import SSHServerBase
 
+
 class SSHServerPipe(SSHServerBase):
 
     def __init__(self, cmd, host_key_file, host_key_file_password=None):
@@ -18,7 +19,13 @@ class SSHServerPipe(SSHServerBase):
 
             # Use pty to create a pseudo-terminal for the subprocess
             master_fd, slave_fd = pty.openpty()
-            proc = subprocess.Popen(self._cmd, shell=True, stdin=slave_fd, stdout=slave_fd, stderr=slave_fd, close_fds=True)
+            proc = subprocess.Popen(
+                self._cmd,
+                shell=True,
+                stdin=slave_fd,
+                stdout=slave_fd,
+                stderr=slave_fd,
+                close_fds=True)
             os.close(slave_fd)
 
             reads = [channel, master_fd]
@@ -47,7 +54,7 @@ class SSHServerPipe(SSHServerBase):
                         if data:
                             channel.send(data)
 
-        except:
+        except BaseException:
             logging.exception("Execution error")
 
         # Close the channel and transport after session ends

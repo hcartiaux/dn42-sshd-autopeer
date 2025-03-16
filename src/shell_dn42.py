@@ -6,6 +6,7 @@ from rich.table import Table
 from rich.text import Text
 from src.utils_dn42 import *
 
+
 class ShellDn42(Cmd):
 
     #############
@@ -15,15 +16,16 @@ class ShellDn42(Cmd):
     # The prompt property can be overridden, allowing us to use a custom
     # string to be displayed at the beginning of each line. This will not
     # be included in any input that we get.
-    doc_header='Documented commands (type help <topic>):'
-    undoc_header='Undocumented commands:'
-    misc_header='Misc help sections:'
-    ruler='='
+    doc_header = 'Documented commands (type help <topic>):'
+    undoc_header = 'Undocumented commands:'
+    misc_header = 'Misc help sections:'
+    ruler = '='
     file = None
     # Instead of using input(), this will use stdout.write() and stdin.readline(),
     # this means we can use any TextIO instead of just sys.stdin and sys.stdout.
     use_rawinput=False
 
+    use_rawinput = False
 
     #############
     # Cmd class methods override, with a sanitized output
@@ -31,11 +33,18 @@ class ShellDn42(Cmd):
 
     # Constructor that will allow us to set out own stdin and stdout.
     # If stdin or stdout is None, sys.stdin or sys.stdout will be used
-    def __init__(self, username, stdin=None, stdout=None, asn="4242420263", server="nl-ams2.flap42.eu"):
+
+    def __init__(
+            self,
+            username,
+            stdin=None,
+            stdout=None,
+            asn="4242420263",
+            server="nl-ams2.flap42.eu"):
         self.username = username
-        self.asn      = asn
-        self.server   = server
-        self.prompt='\r\nAS' + asn + '> '
+        self.asn = asn
+        self.server = server
+        self.prompt = '\r\nAS' + asn + '> '
 
         # Allowed chars
         self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-.+/ ")
@@ -50,8 +59,8 @@ class ShellDn42(Cmd):
 
     def prompt_line(self):
         """Reads an input until Enter is pressed"""
-        line=''
-        max_line_length=80
+        line = ''
+        max_line_length = 80
         while len(line) < max_line_length:
             ch = self.stdin.read(1).decode("utf-8", "ignore")
             if ch not in self._allowed_chars:
@@ -72,47 +81,45 @@ class ShellDn42(Cmd):
         self.stdout.flush()
         return line
 
-
     def cmdloop(self, intro=True):
-       """Repeatedly issue a prompt, accept input, parse an initial prefix
-       off the received input, and dispatch to action methods, passing them
-       the remainder of the line as argument.
+        """Repeatedly issue a prompt, accept input, parse an initial prefix
+        off the received input, and dispatch to action methods, passing them
+        the remainder of the line as argument.
 
-       """
+        """
 
-       self.preloop()
-       if intro:
-           self.do_intro()
-       stop = None
-       while not stop:
-           if self.cmdqueue:
-               line = self.cmdqueue.pop(0)
-           else:
-              self.stdout.write(self.prompt)
-              self.stdout.flush()
-              line = self.prompt_line()
-              if not len(line):
-                  line = 'EOF'
-              else:
-                  line = line.rstrip('\r\n')
-           line = self.precmd(line)
-           stop = self.onecmd(line)
-           stop = self.postcmd(stop, line)
-       self.postloop()
+        self.preloop()
+        if intro:
+            self.do_intro()
+        stop = None
+        while not stop:
+            if self.cmdqueue:
+                line = self.cmdqueue.pop(0)
+            else:
+                self.stdout.write(self.prompt)
+                self.stdout.flush()
+                line = self.prompt_line()
+                if not len(line):
+                    line = 'EOF'
+                else:
+                    line = line.rstrip('\r\n')
+            line = self.precmd(line)
+            stop = self.onecmd(line)
+            stop = self.postcmd(stop, line)
+        self.postloop()
 
     def print_topics(self, header, cmds, cmdlen, maxcol):
         if cmds:
-            self.stdout.write("%s\r\n"%str(header))
+            self.stdout.write("%s\r\n" % str(header))
             if self.ruler:
-                self.stdout.write("%s\r\n"%str(self.ruler * len(header)))
-            self.columnize(cmds, maxcol-1)
+                self.stdout.write("%s\r\n" % str(self.ruler * len(header)))
+            self.columnize(cmds, maxcol - 1)
             self.stdout.write("\r\n")
 
     # If an empty line is given as input, we just print out a newline.
     # This fixes a display issue when spamming enter.
     def emptyline(self):
         self.sanitized_print('')
-
 
     #############
     # Sanitized print methods
@@ -264,13 +271,17 @@ class ShellDn42(Cmd):
         table.add_column("Endpoint address", no_wrap=True)
         table.add_column("Endpoint port", no_wrap=True)
         for as_num, peer_info in get_peer_list().items():
-        table.add_row(as_num, peer_info['wg_pub_key'], Text(peer_info['wg_endpoint_addr']), peer_info['wg_endpoint_port'])
+            table.add_row(
+                as_num,
+                peer_info['wg_pub_key'],
+                Text(peer_info['wg_endpoint_addr']),
+                peer_info['wg_endpoint_port'])
         self.rich_print(table)
 
     def do_peer_remove(self, arg):
         "Remove an already configured peering session"
         peer_list = get_peer_list().keys()
-        as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
+        as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
         if as_num not in peer_list:
             self.rich_print('[red] :exclamation: There is no peering session for this AS')
             self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
@@ -296,6 +307,8 @@ class ShellDn42(Cmd):
             return
         cmd_output = peer_status(as_num)
         table = Table(style="yellow")
-        table.add_column("Peering session status on " + self.server, no_wrap=False)
+        table.add_column(
+            "Peering session status on " + self.server,
+            no_wrap=False)
         table.add_row(Text(cmd_output))
         self.rich_print(table)

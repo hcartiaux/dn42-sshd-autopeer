@@ -1,7 +1,9 @@
 import paramiko
-import socket, threading
+import socket
+import threading
 from abc import ABC, abstractmethod
 from sys import platform
+
 
 class SSHServerBase(ABC):
 
@@ -79,7 +81,7 @@ class SSHServerBase(ABC):
 
                 threading.Thread(target=self.connection_function,
                                  daemon=True,
-                                 args = (client, session, channel)).start()
+                                 args=(client, session, channel)).start()
 
             except socket.timeout:
                 pass
