@@ -4,6 +4,7 @@ from re import match
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from rich.markdown import Markdown
 from src.utils_dn42 import *
 
 class ShellDn42(Cmd):
@@ -250,4 +251,12 @@ class ShellDn42(Cmd):
 
     def do_peer_status(self, arg):
         "Print the state of a peering sessions"
-        self.sanitized_print('Hello there!')
+
+        peer_list = get_peer_list().keys()
+        as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
+        if as_num not in peer_list:
+            self.rich_print('[red] :warning: There is no peering session for this AS')
+            self.rich_print('[red] :warning: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
+            return
+
+        self.rich_print(Markdown("```\n" + peer_status(as_num) + "\n```"))

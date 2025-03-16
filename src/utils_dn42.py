@@ -75,5 +75,9 @@ def get_peer_list():
 def peer_remove(as_num):
     return True
 
-def peer_status(as_num=0):
-    pass
+def peer_status(as_num):
+        birdc_cmd = "birdc show protocols all ibgp_nl_ams1"
+        birdc_output = os.popen("ssh nl-ams2.flap sudo " + birdc_cmd).read()
+        wg_cmd = "wg show wg-peer-int"
+        wg_output = os.popen("ssh nl-ams2.flap sudo " + wg_cmd).read()
+        return "$ " + birdc_cmd + "\n" + birdc_output + "\n\n$ " + wg_cmd + "\n" + wg_output
