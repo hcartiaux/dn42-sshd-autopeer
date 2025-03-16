@@ -218,7 +218,43 @@ class ShellDn42(Cmd):
 
     def do_peer_config(self, arg):
         "Show your peering session configuration"
-        self.sanitized_print('Hello there!')
+
+        peer_list = get_peer_list().keys()
+        as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
+        if as_num not in peer_list:
+            self.rich_print('[red] :warning: There is no peering session for this AS')
+            self.rich_print('[red] :warning: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
+            return
+
+        peer_config = get_peer_config(as_num)
+        table_remote = Table()
+        table_remote.add_column("Link config.", no_wrap=True)
+        table_remote.add_column("AS" + as_num, no_wrap=True)
+        table_remote.add_row('Wg pub key', peer_config['wg_pub_key'])
+        table_remote.add_row('Wg Endpoint addr.', Text(peer_config['wg_endpoint_addr']))
+        table_remote.add_row('Wg Endpoint port', peer_config['wg_endpoint_port'])
+        table_remote.add_row('Link-local address', Text(peer_config['link_local']))
+        self.rich_print(table_remote)
+
+        local_config = get_local_config(as_num)
+        table_local = Table()
+        table_local.add_column("Link config.", no_wrap=True)
+        table_local.add_column("AS" + self.asn, no_wrap=True)
+        table_local.add_row('Wg pub key', local_config['wg_pub_key'])
+        table_local.add_row('Wg Endpoint addr.', Text(local_config['wg_endpoint_addr']))
+        table_local.add_row('Wg Endpoint port', local_config['wg_endpoint_port'])
+        table_local.add_row('Link-local address', Text(local_config['link_local']))
+        self.rich_print(table_local)
+
+        table_wg = Table()
+        table_wg.add_column("Wireguard configuration for AS" + as_num, no_wrap=True)
+        table_wg.add_row(Text(gen_wireguard_config(as_num)))
+        self.rich_print(table_wg)
+
+        table_bird = Table()
+        table_bird.add_column("Bird configuration for AS" + as_num, no_wrap=True)
+        table_bird.add_row(Text(gen_bird_config(as_num)))
+        self.rich_print(table_bird)
 
     def do_peer_list(self, arg):
         "List your existing peering sessions"
