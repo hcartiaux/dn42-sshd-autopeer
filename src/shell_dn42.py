@@ -274,6 +274,7 @@ class ShellDn42(Cmd):
         as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
         if as_num not in peer_list:
             self.rich_print('[red] :warning: There is no peering session for this AS')
+            self.rich_print('[red] :warning: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
             return
         else:
             confirm = self.rich_prompt("[bold blue]Do you really want to remove the peering session of AS " + as_num + "? (YES/NO): ")
