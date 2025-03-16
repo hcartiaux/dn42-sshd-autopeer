@@ -2,6 +2,8 @@ import os
 import socket
 from dns import resolver
 
+### Interrogate the dn42 registry
+
 def load_authorized_keys(user):
     import paramiko
     import base64
@@ -41,6 +43,8 @@ def as_maintained_by(user):
 
     return as_nums
 
+### Verify host conformity
+
 def get_ipv6(host):
     try:
         socket.inet_pton(socket.AF_INET6, host)
@@ -54,8 +58,8 @@ def get_ipv6(host):
     except:
         return []
 
-def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
-    return True
+### Interrogate peering info
+
 def get_local_config(as_num):
     id = get_asn_id(as_num)
     local_config = {
@@ -90,6 +94,11 @@ def get_peer_list():
     }
 
     return peer_list
+
+### Actions
+
+def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
+    return True
 
 def peer_remove(as_num):
     return True
