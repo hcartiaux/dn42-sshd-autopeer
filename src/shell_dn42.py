@@ -161,7 +161,8 @@ class ShellDn42(Cmd):
         # Message to be output when cmdloop() is called.
         self.emptyline()
         as_nums = as_maintained_by(self.username)
-        text = "You are connected as [bold blue]" + self.username.upper() + "-MNT[/] to [bold yellow]" + self.server + " @ AS" + self.asn
+        text = "Welcome to Flip Flap Network (AS4242420263) automated peering service\n"
+        text += "You are connected as [bold blue]" + self.username.upper() + "-MNT[/] to [bold yellow]" + self.server + " @ AS" + self.asn
         self.rich_print(text)
         self.emptyline()
         table = Table(style="blue")
