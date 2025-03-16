@@ -135,10 +135,10 @@ class ShellDn42(Cmd):
         output = StringIO()
         console.file = output
         if newline:
-            console.print(rich_object)
+            console.print(rich_object, overflow='fold')
             self.sanitized_print(output.getvalue())
         else:
-            console.print(rich_object, end='')
+            console.print(rich_object, overflow='fold', end='')
             self.print(output.getvalue())
 
     def rich_prompt(self, text):
