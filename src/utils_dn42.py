@@ -1,7 +1,5 @@
 import os
-import socket
 import sqlite3
-from dns import resolver
 
 # Interrogate the dn42 registry
 
@@ -51,12 +49,14 @@ def as_maintained_by(user):
 
 def get_ipv6(host):
     try:
+        import socket
         socket.inet_pton(socket.AF_INET6, host)
         return [host]
     except BaseException:
         pass
 
     try:
+        from dns import resolver
         answers = resolver.resolve(host, 'AAAA')
         return [rdata.address for rdata in answers]
     except BaseException:
