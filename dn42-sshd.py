@@ -7,14 +7,15 @@ def main():
     host_key_file = top_directory + '/' + '/files/ssh-keys/ssh_host_rsa_key'
 
     # Configuration as environment variables
+    os.environ['SSH_LISTEN_ADDRESS'] = os.getenv('SSH_LISTEN_ADDRESS', '::1')
+    os.environ['SSH_PORT'] = os.getenv('SSH_PORT', '8022')
     os.environ['SERVER'] = os.getenv('SERVER', 'nl-ams2.flap42.eu')
     os.environ['DB_PATH'] = os.getenv('DB_PATH', top_directory + '/' + 'files/db/' + os.environ['SERVER'])
-    os.environ['SSH_PORT'] = os.getenv('SSH_PORT', '8022')
     os.environ['DN42_REGISTRY_DIRECTORY'] = os.getenv(
         'DN42_REGISTRY_DIRECTORY', top_directory + '/' + 'files/registry')
     os.environ['ASN'] = os.getenv('ASN', '4242420263')
 
-
+    # Command line parameters
     parser = argparse.ArgumentParser(prog='dn42-sshd')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -31,6 +32,7 @@ def main():
         sys.exit(1)
 
     if args.peering:
+        # Create a SSH server, authenticating on the Dn42 registry, serving ShellDn42
         from src.shell_dn42 import ShellDn42
         from src.ssh_server_shell import SSHServerShell
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
@@ -45,6 +47,7 @@ def main():
         server = SSHServerShell(ShellDn42, host_key_file)
         server.set_server_interface(SSHServerAuthDn42())
     elif args.gaming:
+        # Create a SSH server, without authentication, serving the command advent
         from src.ssh_server_pipe import SSHServerPipe
         from src.ssh_server_auth_none import SSHServerAuthNone
 
@@ -54,9 +57,9 @@ def main():
         server = SSHServerPipe(cmd, host_key_file)
         server.set_server_interface(SSHServerAuthNone())
 
-    # Start the server, you can give it a custom IP address and port, or
+    # Start the server, you can give it a custom listen IP address and port, or
     # leave it empty to run on 127.0.0.1:22
-    server.start("::1", int(os.getenv("SSH_PORT", 8022)))
+    server.start(os.environ['SSH_LISTEN_ADDRESS'], int(os.environ['SSH_PORT']))
 
 if __name__ == '__main__':
     main()
