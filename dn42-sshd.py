@@ -14,6 +14,9 @@ def main():
     os.environ['DN42_REGISTRY_DIRECTORY'] = os.getenv(
         'DN42_REGISTRY_DIRECTORY', top_directory + '/' + 'files/registry')
     os.environ['ASN'] = os.getenv('ASN', '4242420263')
+    os.environ['WG_PUB_KEY'] = os.getenv('WG_PUB_KEY', 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=')
+    os.environ['WG_LINK_LOCAL'] = os.getenv('WG_LINK_LOCAL', 'fe80:0263::1:')
+    os.environ['WG_BASE_PORT'] = os.getenv('WG_BASE_PORT', '52000')
 
     # Command line parameters
     parser = argparse.ArgumentParser(prog='dn42-sshd')

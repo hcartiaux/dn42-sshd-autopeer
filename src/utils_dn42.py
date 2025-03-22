@@ -86,10 +86,10 @@ def database():
 def get_local_config(as_num):
     id = get_asn_id(as_num)
     local_config = {
-        "wg_pub_key": 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=',
-        "wg_endpoint_addr": '2001:bc8:3feb:100::1',
-        "wg_endpoint_port": str(52000 + int(id)),
-        "link_local": "fe80:0263::1:" + str(id)
+        "wg_pub_key": os.environ['WG_PUB_KEY'],
+        "wg_endpoint_addr": os.environ['SERVER'],
+        "wg_endpoint_port": str(int(os.environ['WG_BASE_PORT']) + int(id)),
+        "link_local": os.environ['WG_LINK_LOCAL'] + str(id)
     }
     return local_config
 
