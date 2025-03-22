@@ -199,9 +199,9 @@ def gen_bird_config(user, as_num):
     local_config = get_local_config(as_num)
 
     bird = f"""
-protocol bgp flipflap_nl_ams2 {{
+protocol bgp flipflap {{
     local as { as_num }
-    neighbor {local_config["link_local"]} as 4242420263;
+    neighbor {local_config["link_local"]} as { os.environ["ASN"] };
     path metric 1;
     interface "wg-peer-flipflap";
     ipv4 {{
