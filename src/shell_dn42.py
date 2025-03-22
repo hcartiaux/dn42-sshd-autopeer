@@ -258,12 +258,12 @@ class ShellDn42(Cmd):
 
         table_wg = Table(style='blue')
         table_wg.add_column("Wireguard configuration for AS" + as_num, no_wrap=True)
-        table_wg.add_row(Text(gen_wireguard_config(as_num)))
+        table_wg.add_row(Text(gen_wireguard_config(self.username, as_num)))
         self.rich_print(table_wg)
 
         table_bird = Table(style='blue')
         table_bird.add_column("Bird configuration for AS" + as_num, no_wrap=True)
-        table_bird.add_row(Text(gen_bird_config(as_num)))
+        table_bird.add_row(Text(gen_bird_config(self.username, as_num)))
         self.rich_print(table_bird)
 
     def do_peer_list(self, arg):

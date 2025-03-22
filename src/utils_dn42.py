@@ -175,41 +175,46 @@ def peer_status(as_num):
 # Gen config
 
 
-def gen_wireguard_config(as_num):
-    #    local_config = get_local_config(as_num)
-    #    peer_config = get_peer_config(as_num)
+def gen_wireguard_config(user, as_num):
+    local_config = get_local_config(as_num)
+    peer_config = get_peer_config(user, as_num)
 
-    wireguard = """
+    wireguard = f"""
 [Interface]
-PrivateKey =
-ListenPort = 51823
-PostUp = /sbin/ip addr add dev %i fe80::103/128 peer fe80::2717/128
+PrivateKey = **REPLACEME**
+ListenPort = { peer_config["wg_endpoint_port"] }
+PostUp = /sbin/ip addr add dev %i { peer_config["link_local"] }/128 peer { local_config["link_local"] }/128
 Table = off
 
 [Peer]
-PublicKey = cokP4jFBH0TlBD/m3sWCpc9nADLOhzM2+lcjAb3ynFc=
-Endpoint = nl.vm.whojk.com:23441
+PublicKey = { local_config["wg_pub_key"] }
+Endpoint = { local_config["wg_endpoint_addr"] }:{ local_config["wg_endpoint_port"] }
 PersistentKeepalive = 30
 AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
 """
     return wireguard
 
 
-def gen_bird_config(as_num):
-    #    local_config = get_local_config(as_num)
-    #    peer_config = get_peer_config(as_num)
+def gen_bird_config(user, as_num):
+    local_config = get_local_config(as_num)
 
-    bird = """
-protocol bgp whojk_v6 from dnpeers {
-    neighbor fe80::2717 as 4242422717;
-    interface "wg-peer-whojk";
-    ipv4 {
+    bird = f"""
+protocol bgp flipflap_nl_ams2 {{
+    local as { as_num }
+    neighbor {local_config["link_local"]} as 4242420263;
+    path metric 1;
+    interface "wg-peer-flipflap";
+    ipv4 {{
         extended next hop on;
-    };
+        import limit 9000 action block;
+        import table;
+    }};
 
-    ipv6 {
+    ipv6 {{
         extended next hop off;
-    };
-}
+        import limit 9000 action block;
+        import table;
+    }};
+}}
 """
     return bird
