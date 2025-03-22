@@ -1,5 +1,6 @@
 import os
 import socket
+import sqlite3
 from dns import resolver
 
 # Interrogate the dn42 registry
@@ -60,6 +61,25 @@ def get_ipv6(host):
         return [rdata.address for rdata in answers]
     except BaseException:
         return []
+
+# Database
+
+
+def database():
+    db_path = os.environ['DB_PATH']
+    connection = sqlite3.connect(db_path)
+    cursor = connection.cursor()
+    table = """ CREATE TABLE IF NOT EXISTS peering_links (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    as_num INTEGER UNIQUE NOT NULL,
+                    wg_pub_key TEXT NOT NULL,
+                    wg_endpoint_addr TEXT NOT NULL,
+                    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535),
+                    link_local_ipv6 TEXT NOT NULL CHECK(link_local_ipv6 LIKE 'fe80:%')
+            ); """
+    cursor.execute(table)
+    connection.commit()
+    connection.close()
 
 # Interrogate peering info
 
