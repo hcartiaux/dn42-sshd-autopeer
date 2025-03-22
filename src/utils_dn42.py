@@ -62,7 +62,7 @@ def get_ipv6(host):
     except BaseException:
         return []
 
-# Database
+# Database creation
 
 
 def database():
@@ -74,8 +74,7 @@ def database():
                     as_num INTEGER UNIQUE NOT NULL,
                     wg_pub_key TEXT NOT NULL,
                     wg_endpoint_addr TEXT NOT NULL,
-                    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535),
-                    link_local_ipv6 TEXT NOT NULL CHECK(link_local_ipv6 LIKE 'fe80:%')
+                    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535)
             ); """
     cursor.execute(table)
     connection.commit()
@@ -96,42 +95,74 @@ def get_local_config(as_num):
 
 
 def get_asn_id(as_num):
-    return 1
+    db_path = os.environ['DB_PATH']
+    with sqlite3.connect(db_path) as connection:
+        connection.row_factory = sqlite3.Row  # provides dictionary-like interface
+        cursor = connection.execute("SELECT id FROM peering_links WHERE as_num = ?", (as_num,))
+        row = cursor.fetchone()
+        return row['id'] if row else None
 
 
-def get_peer_config(as_num):
-    return get_peer_list()[as_num]
+def get_peer_config(user, as_num):
+    return get_peer_list(user)[as_num]
 
 
-def get_peer_list():
+def get_peer_list(user):
+    db_path = os.environ['DB_PATH']
+    as_nums = as_maintained_by(user)
+    placeholders = ",".join("?" * len(as_nums))
+    query = f"""SELECT id, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
+                FROM peering_links
+                WHERE as_num IN ({placeholders})"""
+
     peer_list = {}
-    peer_list["4242420266"] = {
-        "id": 1,
-        "wg_pub_key": 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=',
-        "wg_endpoint_addr": '2001:bc8:3feb:100::2',
-        "wg_endpoint_port": '51902',
-        "link_local": "fe80:0263::2::1"
-    }
-    peer_list["4242420276"] = {
-        "id": 2,
-        "wg_pub_key": 'aa0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=',
-        "wg_endpoint_addr": '2001:bc8:3feb:100::3',
-        "wg_endpoint_port": '51903',
-        "link_local": "fe80:0263::2::2"
-    }
+    with sqlite3.connect(db_path) as connection:
+        connection.row_factory = sqlite3.Row  # Enables dictionary-like row access
+        cursor = connection.cursor()
+        cursor.execute(query, as_nums)
+        rows = cursor.fetchall()
 
+        for row in rows:
+            peer_list[str(row["as_num"])] = {
+                "id": row["id"],
+                "wg_pub_key": row["wg_pub_key"],
+                "wg_endpoint_addr": row["wg_endpoint_addr"],
+                "wg_endpoint_port": str(row["wg_endpoint_port"]),  # Convert to string if needed
+                "link_local": "fe80:0263::2:" + str(row["id"])
+            }
     return peer_list
 
 # Actions
 
 
-def peer_create(as_num, wg_pub_key, wg_end_point_addr, wg_end_point_port):
-    return True
+def peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
+    db_path = os.environ['DB_PATH']
+    query = """INSERT INTO peering_links (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port)
+               VALUES (?, ?, ?, ?)"""
 
+    try:
+        with sqlite3.connect(db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
+            connection.commit()
+    except sqlite3.IntegrityError as e:
+        print(f"Error inserting peer: {e}")
+        return False
+    return True
 
 def peer_remove(as_num):
-    return True
+    db_path = os.environ['DB_PATH']
+    query = "DELETE FROM peering_links WHERE as_num = ?"
 
+    try:
+        with sqlite3.connect(db_path) as connection:
+            cursor = connection.cursor()
+            cursor.execute(query, (as_num,))
+            connection.commit()
+            return True
+    except sqlite3.Error as e:
+        print(f"Error removing peer: {e}")
+        return False
 
 def peer_status(as_num):
     wg_cmd = "wg show wg-peer-int"

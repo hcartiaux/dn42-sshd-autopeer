@@ -188,7 +188,7 @@ class ShellDn42(Cmd):
     def do_peer_create(self, arg):
         "Create a new peering session"
 
-        peer_list = get_peer_list().keys()
+        peer_list = get_peer_list(self.username).keys()
         as_nums = as_maintained_by(self.username)
         as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
         if not match('^[0-9]+$', str(as_num)):
@@ -226,14 +226,17 @@ class ShellDn42(Cmd):
     def do_peer_config(self, arg):
         "Show your peering session configuration"
 
-        peer_list = get_peer_list().keys()
-        as_num    = self.rich_prompt("[bold blue]AS Number:[/] ")
-        if as_num not in peer_list:
-            self.rich_print('[red] :exclamation: There is no peering session for this AS')
-            self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
-            return
+        peer_list = get_peer_list(self.username).keys()
+        if len(peer_list) == 1:
+            as_num = next(iter(peer_list))
+        else:
+            as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
+            if as_num not in peer_list:
+                self.rich_print('[red] :exclamation: There is no peering session for this AS')
+                self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
+                return
 
-        peer_config = get_peer_config(as_num)
+        peer_config = get_peer_config(self.username, as_num)
         table_remote = Table(style='blue')
         table_remote.add_column("Link config.", no_wrap=True)
         table_remote.add_column("AS" + as_num, no_wrap=True)
@@ -271,7 +274,7 @@ class ShellDn42(Cmd):
         table.add_column("Wireguard public key", no_wrap=True)
         table.add_column("Endpoint address", no_wrap=True)
         table.add_column("Endpoint port", no_wrap=True)
-        for as_num, peer_info in get_peer_list().items():
+        for as_num, peer_info in get_peer_list(self.username).items():
             table.add_row(
                 as_num,
                 peer_info['wg_pub_key'],
@@ -281,31 +284,38 @@ class ShellDn42(Cmd):
 
     def do_peer_remove(self, arg):
         "Remove an already configured peering session"
-        peer_list = get_peer_list().keys()
-        as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
-        if as_num not in peer_list:
-            self.rich_print('[red] :exclamation: There is no peering session for this AS')
-            self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
-            return
+        peer_list = get_peer_list(self.username).keys()
+        if len(peer_list) == 1:
+            as_num = next(iter(peer_list))
         else:
-            confirm = self.rich_prompt("[bold red]Do you really want to remove the peering session of AS " + as_num + "? (YES/NO): ")
-            if confirm != 'YES':
-                self.rich_print('[red] :exclamation: Abort peering session removal')
-            elif peer_remove(as_num):
-                self.rich_print('Peering session of AS' + as_num + ' succesfully removed')
-            else:
-                self.rich_print('[red] :exclamation: The peering session could not be removed for AS' + as_num)
+            as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
+            if as_num not in peer_list:
+                self.rich_print('[red] :exclamation: There is no peering session for this AS')
+                self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
+                return
+
+        confirm = self.rich_prompt("[bold red]Do you really want to remove the peering session of AS " + as_num + "? (YES/NO): ")
+        if confirm != 'YES':
+            self.rich_print('[red] :exclamation: Abort peering session removal')
+        elif peer_remove(as_num):
+            self.rich_print('Peering session of AS' + as_num + ' succesfully removed')
+        else:
+            self.rich_print('[red] :exclamation: The peering session could not be removed for AS' + as_num)
 
 
     def do_peer_status(self, arg):
         "Print the state of a peering sessions"
 
-        peer_list = get_peer_list().keys()
-        as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
-        if as_num not in peer_list:
-            self.rich_print('[red] :exclamation: There is no peering session for this AS')
-            self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
-            return
+        peer_list = get_peer_list(self.username).keys()
+        if len(peer_list) == 1:
+            as_num = next(iter(peer_list))
+        else:
+            as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
+            if as_num not in peer_list:
+                self.rich_print('[red] :exclamation: There is no peering session for this AS')
+                self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
+                return
+
         cmd_output = peer_status(as_num)
         table = Table(style="yellow")
         table.add_column(
