@@ -20,8 +20,8 @@ class SSHServerShell(SSHServerBase):
                 self._server.username,
                 stdio,
                 stdio,
-                asn=os.environ['ASN'],
-                server=os.environ['SERVER'])
+                asn=os.environ['DN42_ASN'],
+                server=os.environ['DN42_SERVER'])
             # start the shell
             # cmdloop() will block execution of this thread.
             self.client_shell.cmdloop()

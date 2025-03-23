@@ -66,7 +66,7 @@ def get_ipv6(host):
 
 
 def database():
-    db_path = os.environ['DB_PATH']
+    db_path = os.environ['DN42_DB_PATH']
     connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
     table = """ CREATE TABLE IF NOT EXISTS peering_links (
@@ -86,16 +86,16 @@ def database():
 def get_local_config(as_num):
     id = get_asn_id(as_num)
     local_config = {
-        "wg_pub_key": os.environ['WG_PUB_KEY'],
-        "wg_endpoint_addr": os.environ['SERVER'],
-        "wg_endpoint_port": str(int(os.environ['WG_BASE_PORT']) + int(id)),
-        "link_local": os.environ['WG_LINK_LOCAL'] + str(id)
+        "wg_pub_key": os.environ['DN42_WG_PUB_KEY'],
+        "wg_endpoint_addr": os.environ['DN42_SERVER'],
+        "wg_endpoint_port": str(int(os.environ['DN42_WG_BASE_PORT']) + int(id)),
+        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + str(id)
     }
     return local_config
 
 
 def get_asn_id(as_num):
-    db_path = os.environ['DB_PATH']
+    db_path = os.environ['DN42_DB_PATH']
     with sqlite3.connect(db_path) as connection:
         connection.row_factory = sqlite3.Row  # provides dictionary-like interface
         cursor = connection.execute("SELECT id FROM peering_links WHERE as_num = ?", (as_num,))
@@ -108,7 +108,7 @@ def get_peer_config(user, as_num):
 
 
 def get_peer_list(user):
-    db_path = os.environ['DB_PATH']
+    db_path = os.environ['DN42_DB_PATH']
     as_nums = as_maintained_by(user)
     placeholders = ",".join("?" * len(as_nums))
     query = f"""SELECT id, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
@@ -136,7 +136,7 @@ def get_peer_list(user):
 
 
 def peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
-    db_path = os.environ['DB_PATH']
+    db_path = os.environ['DN42_DB_PATH']
     query = """INSERT INTO peering_links (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port)
                VALUES (?, ?, ?, ?)"""
 
@@ -151,7 +151,7 @@ def peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
     return True
 
 def peer_remove(as_num):
-    db_path = os.environ['DB_PATH']
+    db_path = os.environ['DN42_DB_PATH']
     query = "DELETE FROM peering_links WHERE as_num = ?"
 
     try:
@@ -201,7 +201,7 @@ def gen_bird_config(user, as_num):
     bird = f"""
 protocol bgp flipflap {{
     local as { as_num }
-    neighbor {local_config["link_local"]} as { os.environ["ASN"] };
+    neighbor {local_config["link_local"]} as { os.environ["DN42_ASN"] };
     path metric 1;
     interface "wg-peer-flipflap";
     ipv4 {{
