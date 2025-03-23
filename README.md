@@ -1,11 +1,6 @@
 # dn42 as4242420263 custom SSHD service
 
-This is my custom SSH server implementation using [Paramiko](https://github.com/paramiko/paramiko/).
-
-## Prerequisites
-
-* Python 3
-* Paramiko
+This is my custom SSH server implementation using `Python 3` and `[Paramiko](https://github.com/paramiko/paramiko/)`.
 
 ## Usage
 
@@ -20,9 +15,16 @@ options:
 
 ## Environment variables
 
-* `SSH_PORT`: default is 8022
-* `SSH_MOTD_PATH`: custom `motd` file
+* `DN42_SSH_LISTEN_ADDRESS`:
+* `DN42_SSH_PORT`: default is 8022
+* `DN42_SERVER`: public domain name of the server
+* `DN42_SSH_MOTD_PATH`: path of a custom `motd` file
+* `DN42_DB_PATH`: path of the sqlite database file
 * `DN42_REGISTRY_DIRECTORY`: path of a local git clone of [the dn42 registry repository](https://git.dn42.dev/dn42/registry), used for the peering service authentication
+* `DN42_ASN`: Dn42 Autonomous System Number
+* `DN42_WG_PUB_KEY`: Wireguard public key used for all the tunnels
+* `DN42_WG_LINK_LOCAL`: link-local IPv6 base address used on the wireguard interfaces, without the last 2 bytes
+* `DN42_WG_BASE_PORT`: Wireguard base port
 
 ## Internals
 
@@ -32,7 +34,7 @@ options:
 
 Accept all connections
 
-#### Dn42, class `SSHServerAuthDn42`
+#### Dn42 registry, class `SSHServerAuthDn42`
 
 Accept connections based on the [dn42 maintainer objects](https://dn42.eu/howto/Registry-Authentication#how-authentication-works_authentication-using-an-ssh-key_auth-attribute-format-when-using-an-ssh-key), using the defined public key(s)
 
@@ -51,6 +53,7 @@ Accept connections based on the [dn42 maintainer objects](https://dn42.eu/howto/
 * `shell_class` - name of the [Cmd](https://docs.python.org/3/library/cmd.html) subclass to be used as shell instances.
 * `host_key_file` - path of the ssh host key file
 
-## Resources
+## External resource
 
-* [ramonmeza/PythonSSHServerTutorial](https://github.com/ramonmeza/PythonSSHServerTutorial/)
+I've used [ramonmeza/PythonSSHServerTutorial](https://github.com/ramonmeza/PythonSSHServerTutorial/),
+which describes how-to create a SSH server using Python 3 and Paramiko, as a starting point for this project.
