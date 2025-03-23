@@ -89,7 +89,7 @@ def get_local_config(as_num):
         "wg_pub_key": os.environ['DN42_WG_PUB_KEY'],
         "wg_endpoint_addr": os.environ['DN42_SERVER'],
         "wg_endpoint_port": str(int(os.environ['DN42_WG_BASE_PORT']) + int(id)),
-        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + str(id)
+        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '1:' + hex(id)[2:]
     }
     return local_config
 
@@ -128,7 +128,7 @@ def get_peer_list(user):
                 "wg_pub_key": row["wg_pub_key"],
                 "wg_endpoint_addr": row["wg_endpoint_addr"],
                 "wg_endpoint_port": str(row["wg_endpoint_port"]),  # Convert to string if needed
-                "link_local": "fe80:0263::2:" + str(row["id"])
+                "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '2:' + hex(row["id"])[2:]
             }
     return peer_list
 

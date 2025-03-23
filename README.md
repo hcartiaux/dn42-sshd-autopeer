@@ -23,7 +23,7 @@ options:
 * `DN42_REGISTRY_DIRECTORY`: path of a local git clone of [the dn42 registry repository](https://git.dn42.dev/dn42/registry), used for the peering service authentication
 * `DN42_ASN`: Dn42 Autonomous System Number
 * `DN42_WG_PUB_KEY`: Wireguard public key used for all the tunnels
-* `DN42_WG_LINK_LOCAL`: link-local IPv6 base address used on the wireguard interfaces, without the last 2 bytes
+* `DN42_WG_LINK_LOCAL`: link-local IPv6 base address used on the wireguard interfaces, without the last 4 bytes
 * `DN42_WG_BASE_PORT`: Wireguard base port
 
 ## Internals
