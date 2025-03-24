@@ -8,6 +8,12 @@ from src.utils_dn42 import *
 
 
 class ShellDn42(Cmd):
+    """
+    A custom shell for managing DN42 network peering sessions.
+
+    Provides an interactive command-line interface for creating,
+    listing, configuring, and removing peer sessions.
+    """
 
     #############
     # Cmd class properties
@@ -23,8 +29,6 @@ class ShellDn42(Cmd):
     file = None
     # Instead of using input(), this will use stdout.write() and stdin.readline(),
     # this means we can use any TextIO instead of just sys.stdin and sys.stdout.
-    use_rawinput=False
-
     use_rawinput = False
 
     #############
@@ -41,12 +45,21 @@ class ShellDn42(Cmd):
             stdout=None,
             asn="4242420263",
             server="nl-ams2.flap42.eu"):
+        """
+        Initialize the DN42 shell with user and network details.
+
+        :param username: User's maintenance handle
+        :param stdin: Input stream (default: sys.stdin)
+        :param stdout: Output stream (default: sys.stdout)
+        :param asn: Autonomous System Number
+        :param server: Peering server hostname
+        """
         self.username = username
         self.asn = asn
         self.server = server
-        self.prompt = '\r\nAS' + asn + '> '
+        self.prompt = f'\r\nAS{asn}> '
 
-        # Allowed chars
+        # Allowed characters for input sanitization
         self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-.+/ ")
         self._allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
 
@@ -138,11 +151,10 @@ class ShellDn42(Cmd):
         console = Console(force_terminal=True)
         output = StringIO()
         console.file = output
+        console.print(rich_object, overflow='fold', end='\n' if newline else '')
         if newline:
-            console.print(rich_object, overflow='fold')
             self.sanitized_print(output.getvalue())
         else:
-            console.print(rich_object, overflow='fold', end='')
             self.print(output.getvalue())
 
     def rich_prompt(self, text):
@@ -154,22 +166,25 @@ class ShellDn42(Cmd):
     #############
 
     def do_intro(self, arg=None):
-        "Print the introduction message"
-        # Message to be output when cmdloop() is called.
+        """Display welcome message and user's AS information"""
         self.emptyline()
         as_nums = as_maintained_by(self.username)
-        text = "Welcome to Flip Flap Network (AS4242420263) automated peering service\n"
-        text += "You are connected as [bold blue]" + self.username.upper() + "-MNT[/] to [bold yellow]" + self.server + " @ AS" + self.asn
-        self.rich_print(text)
-        self.emptyline()
+
+        # Welcome and connection details
+        welcome_text = f"Welcome to Flip Flap Network (AS{self.asn}) automated peering service\n"
+        welcome_text += f"You are connected as [bold blue]{self.username.upper()}-MNT[/] to [bold yellow]{self.server} @ AS{self.asn}"
+        self.rich_print(welcome_text)
+
+        # Display AS numbers
         table = Table(style="blue")
         table.add_column("Your AS number(s)", no_wrap=True)
         for as_num in as_nums:
             table.add_row(as_num)
         self.rich_print(table)
+
+        # Additional guidance
         self.emptyline()
-        text = "Use this shell to configure your BGP peering session."
-        self.rich_print(text)
+        self.rich_print("Use this shell to configure your BGP peering session.")
         self.emptyline()
         self.rich_print('Type help or ? to list commands.')
 
@@ -183,8 +198,8 @@ class ShellDn42(Cmd):
         return True
 
     def do_peer_create(self, arg):
-        "Create a new peering session"
 
+        """Interactive process to create a new peering session"""
         peer_list = get_peer_list(self.username).keys()
         as_nums = as_maintained_by(self.username)
         as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
