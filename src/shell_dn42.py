@@ -59,24 +59,21 @@ class ShellDn42(Cmd):
 
     def prompt_line(self):
         """Reads an input until Enter is pressed"""
-        line = ''
-        max_line_length = 80
+        line, max_line_length = '', 80
         while len(line) < max_line_length:
             ch = self.stdin.read(1).decode("utf-8", "ignore")
             if ch not in self._allowed_chars:
-                pass
-            elif ch == '\r' or ch == '\n':  # Enter key
-                self.stdout.write('\r\n')  # Move to the next line
+                continue
+            if ch in {'\r', '\n'}:  # Enter key
+                self.stdout.write('\r\n') # Move to the next line
                 break
-            elif ch == '\x7f' and len(line) > 0:  # Backspace key
+            if ch == '\x7f' and len(line) > 0: # Backspace key
                 line = line[:-1]
-                self.stdout.write('\b \b')  # Erase the last character
-            elif ch == '\t':
-                pass
-            elif ch == '\x7f' and len(line) == 0:  # Backspace key
-                pass
+                self.stdout.write('\b \b') # Erase the last character
+            elif ch == '\x7f' and len(line) == 0: # Backspace key and line is empty
+                continue
             else:
-                self.stdout.write(ch)  # Echo character
+                self.stdout.write(ch) # Echo character
                 line += ch
         self.stdout.flush()
         return line
