@@ -4,6 +4,7 @@ from re import match
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from src.database_manager import DatabaseManager
 from src.utils_dn42 import *
 
 class ShellDn42(Cmd):
@@ -57,6 +58,8 @@ class ShellDn42(Cmd):
         self.asn = asn
         self.server = server
         self.prompt = f'\r\nAS{asn}> '
+
+        self.db_manager = DatabaseManager()
 
         # Allowed characters for input sanitization
         self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-.+/ ")
@@ -224,14 +227,14 @@ class ShellDn42(Cmd):
     def do_bye(self, arg):
         "Quit the current shell"
         self.sanitized_print('See You, Space Cowboy!')
-
+        self.db_manager.close()
         # if a command returns True, the cmdloop() will stop.
         # this acts like disconnecting from the shell.
         return True
 
     def do_peer_create(self, arg):
         """Interactive process to create a new peering session"""
-        peer_list = get_peer_list(self.username).keys()
+        peer_list = self.db_manager.get_peer_list(self.username).keys()
         as_nums = as_maintained_by(self.username)
         as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
         if not match('^[0-9]+$', str(as_num)):
@@ -260,7 +263,7 @@ class ShellDn42(Cmd):
             self.rich_print('[red] :exclamation: Malformed port number (^[0-9]+$)')
             return
 
-        if peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
+        if self.db_manager.peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
             self.rich_print(f'[green]The peering session has been created for AS{as_num}')
             self.rich_print('[green] :information: Display the configuration information with the command [italic]peer_config[/italic]')
         else:
@@ -268,7 +271,7 @@ class ShellDn42(Cmd):
 
     def do_peer_config(self, arg):
         """Show your peering session configuration."""
-        peer_list = get_peer_list(self.username).keys()
+        peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
         else:
@@ -278,7 +281,7 @@ class ShellDn42(Cmd):
                 self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
                 return
 
-        peer_config = get_peer_config(self.username, as_num)
+        peer_config = self.db_manager.get_peer_config(self.username, as_num)
         table_remote = Table(style='blue')
         table_remote.add_column("Link config.", no_wrap=True)
         table_remote.add_column(f"AS{as_num}", no_wrap=True)
@@ -288,7 +291,8 @@ class ShellDn42(Cmd):
         table_remote.add_row('Link-local address', Text(peer_config['link_local']))
         self.rich_print(table_remote)
 
-        local_config = get_local_config(as_num)
+        as_id = self.db_manager.get_asn_id(as_num)
+        local_config = get_local_config(as_id)
         table_local = Table(style='yellow')
         table_local.add_column("Link config.", no_wrap=True)
         table_local.add_column(f"AS{self.asn}", no_wrap=True)
@@ -300,12 +304,12 @@ class ShellDn42(Cmd):
 
         table_wg = Table(style='blue')
         table_wg.add_column(f"Wireguard configuration for AS{as_num}", no_wrap=True)
-        table_wg.add_row(Text(gen_wireguard_config(self.username, as_num)))
+        table_wg.add_row(Text(gen_wireguard_config(self.username, as_id, peer_config['wg_endpoint_port'], peer_config['link_local'])))
         self.rich_print(table_wg)
 
         table_bird = Table(style='blue')
         table_bird.add_column(f"Bird configuration for AS{as_num}", no_wrap=True)
-        table_bird.add_row(Text(gen_bird_config(self.username, as_num)))
+        table_bird.add_row(Text(gen_bird_config(self.username, as_num, as_id)))
         self.rich_print(table_bird)
 
     def do_peer_list(self, arg):
@@ -316,7 +320,7 @@ class ShellDn42(Cmd):
         table.add_column("Wireguard public key", no_wrap=True)
         table.add_column("Endpoint address", no_wrap=True)
         table.add_column("Endpoint port", no_wrap=True)
-        for as_num, peer_info in get_peer_list(self.username).items():
+        for as_num, peer_info in self.db_manager.get_peer_list(self.username).items():
             table.add_row(
                 as_num,
                 peer_info['wg_pub_key'],
@@ -330,7 +334,7 @@ class ShellDn42(Cmd):
 
         :param arg: Optional argument (not used).
         """
-        peer_list = get_peer_list(self.username).keys()
+        peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
         else:
@@ -343,7 +347,7 @@ class ShellDn42(Cmd):
         confirm = self.rich_prompt(f"[bold red]Do you really want to remove the peering session of AS{as_num}? (YES/NO): ")
         if confirm != 'YES':
             self.rich_print('[red] :exclamation: Abort peering session removal')
-        elif peer_remove(as_num):
+        elif self.db_manager.peer_remove(as_num):
             self.rich_print(f'Peering session of AS{as_num} successfully removed')
         else:
             self.rich_print(f'[red] :exclamation: The peering session could not be removed for AS{as_num}')
@@ -354,7 +358,7 @@ class ShellDn42(Cmd):
 
         :param arg: Optional argument (not used).
         """
-        peer_list = get_peer_list(self.username).keys()
+        peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
         else:

@@ -1,5 +1,4 @@
 import os
-import sqlite3
 
 # Interrogate the dn42 registry
 
@@ -62,107 +61,18 @@ def get_ipv6(host):
     except BaseException:
         return []
 
-# Database creation
-
-
-def database():
-    db_path = os.environ['DN42_DB_PATH']
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
-    table = """ CREATE TABLE IF NOT EXISTS peering_links (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    as_num INTEGER UNIQUE NOT NULL,
-                    wg_pub_key TEXT NOT NULL,
-                    wg_endpoint_addr TEXT NOT NULL,
-                    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535)
-            ); """
-    cursor.execute(table)
-    connection.commit()
-    connection.close()
-
 # Interrogate peering info
 
 
-def get_local_config(as_num):
-    id = get_asn_id(as_num)
+def get_local_config(as_id):
     local_config = {
         "wg_pub_key": os.environ['DN42_WG_PUB_KEY'],
         "wg_endpoint_addr": os.environ['DN42_SERVER'],
-        "wg_endpoint_port": str(int(os.environ['DN42_WG_BASE_PORT']) + int(id)),
-        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '1:' + hex(id)[2:]
+        "wg_endpoint_port": str(int(os.environ['DN42_WG_BASE_PORT']) + int(as_id)),
+        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '1:' + hex(int(as_id))[2:]
     }
     return local_config
 
-
-def get_asn_id(as_num):
-    db_path = os.environ['DN42_DB_PATH']
-    with sqlite3.connect(db_path) as connection:
-        connection.row_factory = sqlite3.Row  # provides dictionary-like interface
-        cursor = connection.execute("SELECT id FROM peering_links WHERE as_num = ?", (as_num,))
-        row = cursor.fetchone()
-        return row['id'] if row else None
-
-
-def get_peer_config(user, as_num):
-    return get_peer_list(user)[as_num]
-
-
-def get_peer_list(user):
-    db_path = os.environ['DN42_DB_PATH']
-    as_nums = as_maintained_by(user)
-    placeholders = ",".join("?" * len(as_nums))
-    query = f"""SELECT id, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
-                FROM peering_links
-                WHERE as_num IN ({placeholders})"""
-
-    peer_list = {}
-    with sqlite3.connect(db_path) as connection:
-        connection.row_factory = sqlite3.Row  # Enables dictionary-like row access
-        cursor = connection.cursor()
-        cursor.execute(query, as_nums)
-        rows = cursor.fetchall()
-
-        for row in rows:
-            peer_list[str(row["as_num"])] = {
-                "id": row["id"],
-                "wg_pub_key": row["wg_pub_key"],
-                "wg_endpoint_addr": row["wg_endpoint_addr"],
-                "wg_endpoint_port": str(row["wg_endpoint_port"]),  # Convert to string if needed
-                "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '2:' + hex(row["id"])[2:]
-            }
-    return peer_list
-
-# Actions
-
-
-def peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
-    db_path = os.environ['DN42_DB_PATH']
-    query = """INSERT INTO peering_links (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port)
-               VALUES (?, ?, ?, ?)"""
-
-    try:
-        with sqlite3.connect(db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
-            connection.commit()
-    except sqlite3.IntegrityError as e:
-        print(f"Error inserting peer: {e}")
-        return False
-    return True
-
-def peer_remove(as_num):
-    db_path = os.environ['DN42_DB_PATH']
-    query = "DELETE FROM peering_links WHERE as_num = ?"
-
-    try:
-        with sqlite3.connect(db_path) as connection:
-            cursor = connection.cursor()
-            cursor.execute(query, (as_num,))
-            connection.commit()
-            return True
-    except sqlite3.Error as e:
-        print(f"Error removing peer: {e}")
-        return False
 
 def peer_status(as_num):
     wg_cmd = "wg show wg-peer-int"
@@ -175,15 +85,14 @@ def peer_status(as_num):
 # Gen config
 
 
-def gen_wireguard_config(user, as_num):
-    local_config = get_local_config(as_num)
-    peer_config = get_peer_config(user, as_num)
+def gen_wireguard_config(user, as_id, wg_endpoint_port, link_local):
+    local_config = get_local_config(as_id)
 
     wireguard = f"""
 [Interface]
 PrivateKey = **REPLACEME**
-ListenPort = { peer_config["wg_endpoint_port"] }
-PostUp = /sbin/ip addr add dev %i { peer_config["link_local"] }/128 peer { local_config["link_local"] }/128
+ListenPort = { wg_endpoint_port }
+PostUp = /sbin/ip addr add dev %i { link_local }/128 peer { local_config["link_local"] }/128
 Table = off
 
 [Peer]
@@ -195,8 +104,8 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
     return wireguard
 
 
-def gen_bird_config(user, as_num):
-    local_config = get_local_config(as_num)
+def gen_bird_config(user, as_num, as_id):
+    local_config = get_local_config(as_id)
 
     bird = f"""
 protocol bgp flipflap {{

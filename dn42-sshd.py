@@ -39,13 +39,9 @@ def main():
         from src.shell_dn42 import ShellDn42
         from src.ssh_server_shell import SSHServerShell
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
-        from src.utils_dn42 import database
 
         os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
             'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/' + os.environ['DN42_SERVER'])
-
-        # Create the database if necessary
-        database()
 
         server = SSHServerShell(ShellDn42, host_key_file)
         server.set_server_interface(SSHServerAuthDn42())
