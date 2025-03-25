@@ -15,8 +15,8 @@ options:
 
 ## Environment variables
 
-* `DN42_SSH_LISTEN_ADDRESS`:
-* `DN42_SSH_PORT`: default is 8022
+* `DN42_SSH_LISTEN_ADDRESS`: Default is `::1`
+* `DN42_SSH_PORT`: default is `8022`
 * `DN42_SERVER`: public domain name of the server
 * `DN42_SSH_MOTD_PATH`: path of a custom `motd` file
 * `DN42_DB_PATH`: path of the sqlite database file
