@@ -83,6 +83,8 @@ class ShellDn42(Cmd):
         line, max_line_length = '', 80
         while len(line) < max_line_length:
             ch = self.stdin.read(1).decode("utf-8", "ignore")
+            if not ch:
+                break
             if ch not in self._allowed_chars:
                 continue
             if ch in {'\r', '\n'}:  # Enter key
