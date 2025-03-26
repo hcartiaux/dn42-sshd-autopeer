@@ -1,6 +1,6 @@
 # dn42 as4242420263 custom SSHD service
 
-This is my custom SSH server implementation using `Python 3` and `[Paramiko](https://github.com/paramiko/paramiko/)`.
+This is my custom SSH server implementation using `Python 3` and [`Paramiko`](https://github.com/paramiko/paramiko/).
 
 ## Usage
 
