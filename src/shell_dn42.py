@@ -13,6 +13,13 @@ class ShellDn42(Cmd):
 
     Provides an interactive command-line interface for creating,
     listing, configuring, and removing peer sessions.
+
+    Attributes:
+        username (str): User's maintenance handle.
+        asn (str): Autonomous System Number.
+        server (str): Peering server hostname.
+        db_manager (DatabaseManager): Database management instance.
+        _allowed_chars (set): Set of allowed input characters.
     """
 
     #############
@@ -46,13 +53,18 @@ class ShellDn42(Cmd):
             asn="4242420263",
             server="nl-ams2.flap42.eu"):
         """
-        Initialize the DN42 shell with user and network details.
+        Initialize the shell with user and network details.
 
-        :param username: User's maintenance handle
-        :param stdin: Input stream (default: sys.stdin)
-        :param stdout: Output stream (default: sys.stdout)
-        :param asn: Autonomous System Number
-        :param server: Peering server hostname
+        Parameters:
+            username (str): User's maintenance handle for DN42 network.
+            stdin (file, optional): Input stream for shell operations.
+                                    Defaults to sys.stdin.
+            stdout (file, optional): Output stream for shell operations.
+                                     Defaults to sys.stdout.
+            asn (int, optional): Autonomous System Number associated with the user.
+                                 Defaults to None.
+            server (str, optional): Hostname of the peering server.
+                                    Defaults to None.
         """
         self.username = username
         self.asn = asn
@@ -72,7 +84,12 @@ class ShellDn42(Cmd):
         """
         Handle unknown commands.
 
-        :param line: The input line that was not recognized as a command.
+        This method is called when an unrecognized command is entered
+        in the shell interface, providing a way to manage unexpected input.
+
+        Parameters:
+            line (str): The complete input line that was not recognized
+                        as a valid command by the shell.
         """
         if line != 'EOF':
             self.sanitized_print('*** Unknown syntax: ' + line)
@@ -81,7 +98,8 @@ class ShellDn42(Cmd):
         """
         Reads an input until Enter is pressed.
 
-        :return: The input line read from the user.
+        Returns:
+            str: The complete input line read from the user before pressing Enter.
         """
         line, max_line_length = '', 80
         while len(line) < max_line_length:
@@ -112,7 +130,9 @@ class ShellDn42(Cmd):
         off the received input, and dispatch to action methods, passing them
         the remainder of the line as argument.
 
-        :param intro: If True, display the introductory message.
+        Parameters:
+            intro (bool, optional): Controls whether to display the introduction message.
+                                    Defaults to True.
         """
         self.preloop()
         if intro:
@@ -135,7 +155,9 @@ class ShellDn42(Cmd):
         self.postloop()
 
     def print_topics(self, header, cmds, cmdlen, maxcol):
-        """Print command topics."""
+        """
+        Print command topics
+        """
         if cmds:
             self.stdout.write("%s\r\n" % str(header))
             if self.ruler:
@@ -144,7 +166,9 @@ class ShellDn42(Cmd):
             self.stdout.write("\r\n")
 
     def emptyline(self):
-        """Handle empty line input."""
+        """
+        Handle empty line input.
+        """
         self.sanitized_print('')
 
     #############
@@ -156,27 +180,36 @@ class ShellDn42(Cmd):
         """
         Custom print function that utilizes the given stdout.
 
-        :param value: The value to print.
+        Parameters:
+            value (str): The value to be printed to the output stream.
         """
         if self.stdout and not self.stdout.closed:
             self.stdout.write(value)
             self.stdout.flush()
 
-    def sanitized_print(self, output):
+    def sanitized_print(self, value):
         """
-        Print sanitized output.
+        Print sanitized output by cleaning and formatting the input.
 
-        :param output: The output string to sanitize and print.
+        Strips whitespace from each line of the input and ensures
+        consistent line ending format.
+
+        Parameters:
+            value (str): The string to sanitize and print.
         """
-        clean_output = '\r\n'.join(line.strip() for line in output.splitlines())
-        self.print(clean_output + '\r\n')
+        clean_value = '\r\n'.join(line.strip() for line in value.splitlines())
+        self.print(clean_value + '\r\n')
 
     def rich_print(self, rich_object, newline=True):
         """
         Print rich objects.
 
-        :param rich_object: The rich object to print.
-        :param newline: Whether to print a newline at the end.
+        Utilizes the Rich library to print objects with enhanced formatting,
+
+        Parameters:
+            rich_object: The rich object to print.
+            newline (bool, optional): Whether to print a newline at the end.
+                                      Defaults to True.
         """
         console = Console(force_terminal=True)
         output = StringIO()
@@ -187,12 +220,18 @@ class ShellDn42(Cmd):
         else:
             self.print(output.getvalue())
 
-    def rich_prompt(self, text):
+    def rich_prompt(self, rich_object):
         """
-        Display a rich prompt and read input.
+        Display a rich prompt and read user input.
 
-        :param text: The prompt text to display.
-        :return: The input line read from the user.
+        Prints the prompt using rich formatting and then
+        reads the user's input line.
+
+        Parameters:
+            rich_object: The rich object to print before the prompt.
+
+        Returns:
+            str: The input line read from the user.
         """
         self.rich_print(text, newline=False)
         return self.prompt_line()
@@ -202,7 +241,10 @@ class ShellDn42(Cmd):
     #############
 
     def do_intro(self, arg=None):
-        """Display welcome message and user's AS information"""
+        """
+        Display welcome message and user's AS information
+        """
+
         as_nums = as_maintained_by(self.username)
 
         # Welcome and connection details
@@ -225,7 +267,9 @@ class ShellDn42(Cmd):
         self.rich_print('Type help or ? to list commands.')
 
     def do_bye(self, arg):
-        "Quit the current shell"
+        """
+        Quit the current shell
+        """
         self.sanitized_print('See You, Space Cowboy!')
         self.db_manager.close()
         # if a command returns True, the cmdloop() will stop.
@@ -233,7 +277,13 @@ class ShellDn42(Cmd):
         return True
 
     def do_peer_create(self, arg):
-        """Interactive process to create a new peering session"""
+        """
+        Guides the user through creating a new peering session by:
+        - Validating AS number
+        - Collecting WireGuard public key
+        - Gathering endpoint address and port
+        - Attempting to create the peer in the database
+        """
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         as_nums = as_maintained_by(self.username)
         as_num           = self.rich_prompt("[bold blue]AS Number                 :[/] ")
@@ -270,7 +320,15 @@ class ShellDn42(Cmd):
             self.rich_print(f'[red] :exclamation: The peering session could not be created for AS{as_num}')
 
     def do_peer_config(self, arg):
-        """Show your peering session configuration."""
+        """
+        Show the configuration for an existing peering session.
+
+        Displays detailed configuration information including:
+        - Remote peer configuration
+        - Local configuration
+        - WireGuard configuration
+        - Bird configuration
+        """
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
@@ -282,6 +340,8 @@ class ShellDn42(Cmd):
                 return
 
         peer_config = self.db_manager.get_peer_config(self.username, as_num)
+
+        # Remote peer configuration table
         table_remote = Table(style='blue')
         table_remote.add_column("Link config.", no_wrap=True)
         table_remote.add_column(f"AS{as_num}", no_wrap=True)
@@ -291,6 +351,7 @@ class ShellDn42(Cmd):
         table_remote.add_row('Link-local address', Text(peer_config['link_local']))
         self.rich_print(table_remote)
 
+        # Local configuration table
         as_id = self.db_manager.get_asn_id(as_num)
         local_config = get_local_config(as_id)
         table_local = Table(style='yellow')
@@ -302,18 +363,25 @@ class ShellDn42(Cmd):
         table_local.add_row('Link-local address', Text(local_config['link_local']))
         self.rich_print(table_local)
 
+        # WireGuard configuration table
         table_wg = Table(style='blue')
         table_wg.add_column(f"Wireguard configuration for AS{as_num}", no_wrap=True)
         table_wg.add_row(Text(gen_wireguard_config(self.username, as_id, peer_config['wg_endpoint_port'], peer_config['link_local'])))
         self.rich_print(table_wg)
 
+        # Bird configuration table
         table_bird = Table(style='blue')
         table_bird.add_column(f"Bird configuration for AS{as_num}", no_wrap=True)
         table_bird.add_row(Text(gen_bird_config(self.username, as_num, as_id)))
         self.rich_print(table_bird)
 
     def do_peer_list(self, arg):
-        """List your existing peering sessions."""
+        """
+        List existing peering sessions for the current user.
+
+        Displays a table with details of all current peering sessions,
+        including AS number, WireGuard public key, and endpoint information.
+        """
         self.emptyline()
         table = Table(title="Your existing peering sessions", style="blue")
         table.add_column("AS number", no_wrap=True)
@@ -330,9 +398,12 @@ class ShellDn42(Cmd):
 
     def do_peer_remove(self, arg):
         """
-        Remove an already configured peering session.
+        Remove an existing peering session.
 
-        :param arg: Optional argument (not used).
+        Guides the user through the process of removing a peering session:
+        - Selects the AS number to remove
+        - Requests user confirmation
+        - Attempts to remove the peering session from the database
         """
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
@@ -354,9 +425,12 @@ class ShellDn42(Cmd):
 
     def do_peer_status(self, arg):
         """
-        Print the state of a peering session.
+        Print the current status of a peering session.
 
-        :param arg: Optional argument (not used).
+        Retrieves and displays the status of a specific peering session:
+        - Selects the AS number
+        - Retrieves status information
+        - Displays the status in a formatted table
         """
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
