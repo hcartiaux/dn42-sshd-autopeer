@@ -3,10 +3,13 @@ import sys
 import argparse
 
 def main():
+    # Get the directory of the current script
     top_directory = os.path.dirname(os.path.realpath(__file__))
+
+    # Define the path to the SSH host key file
     host_key_file = top_directory + '/' + '/files/ssh-keys/ssh_host_rsa_key'
 
-    # Configuration as environment variables
+    # Configuration environment variables
     os.environ['DN42_SSH_LISTEN_ADDRESS'] = os.getenv('DN42_SSH_LISTEN_ADDRESS', '::1')
     os.environ['DN42_SSH_PORT'] = os.getenv('DN42_SSH_PORT', '8022')
     os.environ['DN42_SERVER'] = os.getenv('DN42_SERVER', 'nl-ams2.flap42.eu')
@@ -19,6 +22,7 @@ def main():
     os.environ['DN42_WG_BASE_PORT'] = os.getenv('DN42_WG_BASE_PORT', '52000')
 
     # Command line parameters
+    # Set up command-line argument parsing
     parser = argparse.ArgumentParser(prog='dn42-sshd')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -34,30 +38,39 @@ def main():
     except BaseException:
         sys.exit(1)
 
+    # Configure and start the server based on the selected mode
     if args.peering:
-        # Create a SSH server, authenticating on the Dn42 registry, serving ShellDn42
+        # Peering mode: Create an SSH server, authenticates based of Dn42 registry maintainer objects
         from src.shell_dn42 import ShellDn42
         from src.ssh_server_shell import SSHServerShell
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
 
+        # Set the Message of the Day (MOTD) path for the peering server
         os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
             'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/' + os.environ['DN42_SERVER'])
 
+        # Create SSH server with ShellDn42 and DN42 authentication
         server = SSHServerShell(ShellDn42, host_key_file)
         server.set_server_interface(SSHServerAuthDn42())
+
     elif args.gaming:
-        # Create a SSH server, without authentication, serving the command advent
+        # Gaming mode: Create an SSH server without authentication, running a specific command
         from src.ssh_server_pipe import SSHServerPipe
         from src.ssh_server_auth_none import SSHServerAuthNone
 
+        # Set the MOTD path for the gaming server
         os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
             'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/motd_gaming_service')
+
+        # Specify the command to run (in this case, 'advent')
         cmd = 'advent'
+
+        # Create SSH server that accepts all connections and pipes input/output to the specified command
         server = SSHServerPipe(cmd, host_key_file)
         server.set_server_interface(SSHServerAuthNone())
 
-    # Start the server, you can give it a custom listen IP address and port, or
-    # leave it empty to run on 127.0.0.1:22
+    # Start the server with the specified listen address and port
+    # If no address/port specified, it defaults to 127.0.0.1:22
     server.start(os.environ['DN42_SSH_LISTEN_ADDRESS'], int(os.environ['DN42_SSH_PORT']))
 
 if __name__ == '__main__':
