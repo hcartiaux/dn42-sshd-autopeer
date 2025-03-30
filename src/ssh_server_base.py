@@ -19,22 +19,18 @@ class SSHServerBase(ABC):
         _listen_thread (threading.Thread): Thread responsible for handling incoming connections.
     """
 
-    def __init__(self):
+    def __init__(self, server_interface):
         """
         Initialize the SSH server base infrastructure.
+
+        Parameters:
+            server_interface: The paramiko server interface to handle SSH connections
+                              and the authentication.
         """
+        self._server = server_interface()
         self._is_running = threading.Event()
         self._socket = None
         self._listen_thread = None
-
-    def set_server_interface(self, server_interface):
-        """
-        Set the server interface for SSH connection management.
-
-        Parameters:
-            server_interface: The paramiko server interface to handle SSH connections.
-        """
-        self._server = server_interface()
 
     def start(self, address='::1', port=22, timeout=1):
         """

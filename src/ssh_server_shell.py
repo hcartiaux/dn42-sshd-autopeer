@@ -16,7 +16,7 @@ class SSHServerShell(SSHServerBase):
         _host_key (paramiko.RSAKey): SSH host key for server authentication.
     """
 
-    def __init__(self, shell_class, host_key_file, host_key_file_password=None):
+    def __init__(self, server_interface, shell_class, host_key_file, host_key_file_password=None):
         """
         Initialize the SSH server shell with a specific shell class and host key.
 
@@ -26,7 +26,7 @@ class SSHServerShell(SSHServerBase):
             host_key_file_password (str, optional): Password for the host key file.
                                                     Defaults to None.
         """
-        super(SSHServerShell, self).__init__()
+        super(SSHServerShell, self).__init__(server_interface)
         self.shell_class = shell_class
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 

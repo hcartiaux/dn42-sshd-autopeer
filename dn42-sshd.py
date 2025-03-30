@@ -53,8 +53,7 @@ def main():
             'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/' + os.environ['DN42_SERVER'])
 
         # Create SSH server with ShellDn42 and DN42 authentication
-        server = SSHServerShell(ShellDn42, host_key_file)
-        server.set_server_interface(SSHServerAuthDn42)
+        server = SSHServerShell(SSHServerAuthDn42, ShellDn42, host_key_file)
 
     elif args.gaming:
         # Gaming mode: Create an SSH server without authentication, running a specific command
@@ -69,8 +68,7 @@ def main():
         cmd = 'advent'
 
         # Create SSH server that accepts all connections and pipes input/output to the specified command
-        server = SSHServerPipe(cmd, host_key_file)
-        server.set_server_interface(SSHServerAuthNone)
+        server = SSHServerPipe(SSHServerAuthNone, cmd, host_key_file)
 
     # Start the server with the specified listen address and port
     # If no address/port specified, it defaults to 127.0.0.1:22

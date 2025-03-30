@@ -19,17 +19,19 @@ class SSHServerPipe(SSHServerBase):
         _host_key (paramiko.RSAKey): SSH host key for server authentication.
     """
 
-    def __init__(self, cmd, host_key_file, host_key_file_password=None):
+    def __init__(self, server_interface, cmd, host_key_file, host_key_file_password=None):
         """
         Initialize the SSH pipe server with a command and host key.
 
         Parameters:
+            server_interface: The paramiko server interface to handle SSH connections
+                              and the authentication.
             cmd (str): The shell command to be executed for each connection.
             host_key_file (str): Path to the SSH host key private key file.
             host_key_file_password (str, optional): Password for the host key file.
                                                     Defaults to None.
         """
-        super(SSHServerPipe, self).__init__()
+        super(SSHServerPipe, self).__init__(server_interface)
         self._cmd = cmd
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 
