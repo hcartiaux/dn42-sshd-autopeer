@@ -77,7 +77,7 @@ class ShellDn42(Cmd):
 
         # Allowed characters for input sanitization
         self._allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789=:?[]_-.+/ ")
-        self._allowed_chars.update({'\x1b', '\x7f', '\r', '\n'})
+        self._allowed_chars.update({'\x7f', '\r', '\n'})
 
         # Call the base constructor of cmd.Cmd with our own stdin and stdout
         super(ShellDn42, self).__init__(stdin=stdin, stdout=stdout)
@@ -108,6 +108,10 @@ class ShellDn42(Cmd):
             ch = self.stdin.read(1).decode("utf-8", "ignore")
             if not ch:
                 break
+            # Strip escape sequences
+            if ord(ch) == int("1b",16):
+                self.stdin.read(2).decode("utf-8", "ignore")
+                continue
             if ch not in self._allowed_chars:
                 continue
             if ch in {'\r', '\n'}:  # Enter key
