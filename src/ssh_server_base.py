@@ -31,7 +31,7 @@ class SSHServerBase(ABC):
         Parameters:
             server_interface: The paramiko server interface to handle SSH connections.
         """
-        self._server = server_interface
+        self._server = server_interface()
 
     def start(self, address='::1', port=22, timeout=1):
         """

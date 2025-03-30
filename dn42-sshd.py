@@ -51,7 +51,7 @@ def main():
 
         # Create SSH server with ShellDn42 and DN42 authentication
         server = SSHServerShell(ShellDn42, host_key_file)
-        server.set_server_interface(SSHServerAuthDn42())
+        server.set_server_interface(SSHServerAuthDn42)
 
     elif args.gaming:
         # Gaming mode: Create an SSH server without authentication, running a specific command
@@ -67,7 +67,7 @@ def main():
 
         # Create SSH server that accepts all connections and pipes input/output to the specified command
         server = SSHServerPipe(cmd, host_key_file)
-        server.set_server_interface(SSHServerAuthNone())
+        server.set_server_interface(SSHServerAuthNone)
 
     # Start the server with the specified listen address and port
     # If no address/port specified, it defaults to 127.0.0.1:22
