@@ -109,7 +109,7 @@ class SSHServerBase(ABC):
                 pass
 
     @abstractmethod
-    def connection_function(self, client, session, channel):
+    def connection_function(self, client, session, channel, username):
         """
         Abstract method to handle individual SSH connections.
 
@@ -120,5 +120,6 @@ class SSHServerBase(ABC):
             client (socket.socket): The connected client socket.
             session (paramiko.Transport): The SSH transport session.
             channel (paramiko.Channel): The SSH communication channel.
+            username (str): The SSH username.
         """
         pass

@@ -9,7 +9,12 @@ class SSHServerAuthNone(paramiko.ServerInterface):
 
     Provides a permissive authentication mechanism that automatically
     allows any authentication attempt without detailed verification.
+
+    Attributes:
+        last_login (str): Stores the last accepted username
     """
+
+    last_login = ''
 
     def check_auth_none(self, username):
         """
@@ -21,6 +26,7 @@ class SSHServerAuthNone(paramiko.ServerInterface):
         Returns:
             int: Always returns AUTH_SUCCESSFUL, allowing any username.
         """
+        self.last_login = username
         return paramiko.AUTH_SUCCESSFUL
 
     def check_channel_request(self, kind, chanid):

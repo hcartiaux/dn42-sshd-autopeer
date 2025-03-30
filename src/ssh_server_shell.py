@@ -30,7 +30,7 @@ class SSHServerShell(SSHServerBase):
         self.shell_class = shell_class
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 
-    def connection_function(self, client, session, channel):
+    def connection_function(self, client, session, channel, username):
         """
         Handle individual SSH connection by creating and running a shell instance.
 
@@ -44,6 +44,7 @@ class SSHServerShell(SSHServerBase):
             client (socket.socket): The connected client socket.
             session (paramiko.Transport): The SSH transport session.
             channel (paramiko.Channel): The SSH communication channel.
+            username (str): The SSH username.
 
         Notes:
             - Uses environment variables DN42_ASN and DN42_SERVER for shell configuration
@@ -55,7 +56,7 @@ class SSHServerShell(SSHServerBase):
             stdio = channel.makefile('rwU')
             # create the client shell
             self.client_shell = self.shell_class(
-                self._server.username,
+                username,
                 stdio,
                 stdio,
                 asn=os.environ['DN42_ASN'],

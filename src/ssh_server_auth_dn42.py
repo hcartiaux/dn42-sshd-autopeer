@@ -15,10 +15,10 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
     using public key verification based on Dn42 registry.
 
     Attributes:
-        username (str): Stores the authenticated username after successful login.
+        last_login (str): Stores the authenticated username of the last successful login.
     """
 
-    username = ''
+    last_login = ''
 
     def check_auth_publickey(self, username, key):
         """
@@ -42,6 +42,7 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
                 if authorized_key == key:
                     print(f"[AuthDn42] Authentication successful for {username} with {key.algorithm_name} key {key.fingerprint}")
                     self.username = username
+                    self.last_login = username
                     return paramiko.AUTH_SUCCESSFUL
             print(f"[AuthDn42] Authentication failed for {username}")
         return paramiko.AUTH_FAILED

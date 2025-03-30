@@ -33,7 +33,7 @@ class SSHServerPipe(SSHServerBase):
         self._cmd = cmd
         self._host_key = paramiko.RSAKey.from_private_key_file(host_key_file, host_key_file_password)
 
-    def connection_function(self, client, session, channel):
+    def connection_function(self, client, session, channel, username):
         """
         Handle individual SSH connection by piping a command through a pseudo-terminal.
 
@@ -48,6 +48,7 @@ class SSHServerPipe(SSHServerBase):
             client (socket.socket): The connected client socket.
             session (paramiko.Transport): The SSH transport session.
             channel (paramiko.Channel): The SSH communication channel.
+            username (str): The SSH username.
 
         Notes:
             - Uses select to handle non-blocking I/O between SSH channel and subprocess
