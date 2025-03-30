@@ -1,9 +1,9 @@
-import paramiko
-import os
-import pty
-import subprocess
-import select
 import logging
+import os
+import paramiko
+import pty
+import select
+import subprocess
 from src.ssh_server_base import SSHServerBase
 
 
@@ -95,7 +95,7 @@ class SSHServerPipe(SSHServerBase):
                             channel.send(data)
 
         except BaseException:
-            logging.exception("Execution error")
+            logging.exception("[{threading.get_ident()}][SSHServerPipe] Execution error")
 
         # Close the channel and transport after session ends
         channel.close()

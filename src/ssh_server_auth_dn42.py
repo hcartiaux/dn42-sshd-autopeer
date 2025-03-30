@@ -1,9 +1,10 @@
-import paramiko
-import os
 import base64
+import logging
+import os
+import paramiko
 import re
+import threading
 from pathlib import Path
-
 from src.utils_dn42 import load_authorized_keys
 
 
@@ -35,16 +36,15 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
             int: Authentication result (paramiko.AUTH_SUCCESSFUL or paramiko.AUTH_FAILED)
         """
         if not re.match("^[A-Za-z0-9-]+$", username):
-            print(f"[AuthDn42] Username {username} contains forbidden characters")
+            logging.warn(f"[AuthDn42] Username {username} contains forbidden characters")
         else:
             authorized_keys = load_authorized_keys(username)
             for authorized_key in authorized_keys:
                 if authorized_key == key:
-                    print(f"[AuthDn42] Authentication successful for {username} with {key.algorithm_name} key {key.fingerprint}")
-                    self.username = username
+                    logging.info(f"[AuthDn42] Authentication successful for {username} with {key.algorithm_name} key {key.fingerprint}")
                     self.last_login = username
                     return paramiko.AUTH_SUCCESSFUL
-            print(f"[AuthDn42] Authentication failed for {username}")
+            logging.warning(f"[AuthDn42] Authentication failed for {username}")
         return paramiko.AUTH_FAILED
 
     def get_allowed_auths(self, username):

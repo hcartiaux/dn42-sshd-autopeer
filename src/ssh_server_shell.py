@@ -1,6 +1,6 @@
-import paramiko
-import os
 import logging
+import os
+import paramiko
 from src.ssh_server_base import SSHServerBase
 
 
@@ -64,10 +64,8 @@ class SSHServerShell(SSHServerBase):
             # start the shell
             # cmdloop() will block execution of this thread.
             self.client_shell.cmdloop()
-
         except BaseException:
-            logging.exception("Execution error in the shell of " + self._server.username)
-            pass
+            logging.exception(f"[{threading.get_ident()}][SSHServerShell] Execution error in the shell of {username}")
 
         # Close the channel and transport after session ends
         channel.close()

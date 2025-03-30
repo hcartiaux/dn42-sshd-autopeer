@@ -1,3 +1,5 @@
+import logging
+import threading
 from cmd import Cmd
 from io import StringIO
 from re import match
@@ -134,25 +136,35 @@ class ShellDn42(Cmd):
             intro (bool, optional): Controls whether to display the introduction message.
                                     Defaults to True.
         """
-        self.preloop()
-        if intro:
-            self.do_intro()
-        stop = None
-        while not stop:
-            if self.cmdqueue:
-                line = self.cmdqueue.pop(0)
-            else:
-                self.stdout.write(self.prompt)
-                self.stdout.flush()
-                line = self.prompt_line()
-                if not len(line):
-                    line = 'EOF'
+        try:
+            self.preloop()
+            if intro:
+                self.do_intro()
+            stop = None
+            while not stop:
+                if self.cmdqueue:
+                    line = self.cmdqueue.pop(0)
                 else:
-                    line = line.rstrip('\r\n')
-            line = self.precmd(line)
-            stop = self.onecmd(line)
-            stop = self.postcmd(stop, line)
-        self.postloop()
+                    self.stdout.write(self.prompt)
+                    self.stdout.flush()
+                    line = self.prompt_line()
+                    if not len(line):
+                        line = 'EOF'
+                    else:
+                        line = line.rstrip('\r\n')
+                line = self.precmd(line)
+                stop = self.onecmd(line)
+                stop = self.postcmd(stop, line)
+            self.postloop()
+        except OSError as e:
+            if "Socket is closed" in str(e):
+                logging.warning(f"[{threading.get_ident()}][ShellDn42] Socket is closed")
+            else:
+                logging.exception(f"[{threading.get_ident()}][ShellDn42] ")
+        except BaseException:
+            logging.exception(f"[{threading.get_ident()}][ShellDn42] ")
+
+        self.db_manager.close()
 
     def print_topics(self, header, cmds, cmdlen, maxcol):
         """

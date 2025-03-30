@@ -1,8 +1,11 @@
+import logging
 import paramiko
 import socket
 import threading
 from abc import ABC, abstractmethod
 from sys import platform
+
+
 class SSHServerBase(ABC):
     """
     Abstract base class for creating a multi-threaded SSH server.
@@ -79,12 +82,12 @@ class SSHServerBase(ABC):
         Runs while the server is active, accepting client connections,
         establishing SSH transport, and spawning connection handling threads.
         """
-        print("[SSHServerBase] Listening thread started")
+        logging.info(f"[SSHServerBase] Listening thread started")
         while self._is_running.is_set():
             try:
                 self._socket.listen()
                 client, addr = self._socket.accept()
-                print(f"[SSHServerBase] Accepted connection from {addr}")
+                logging.info(f"[SSHServerBase] Accepted connection from {addr}")
 
                 # create the SSH transport object
                 session = paramiko.Transport(client)
@@ -97,13 +100,16 @@ class SSHServerBase(ABC):
                     return
                 channel = session.accept()
                 if channel is None:
-                    print(f"[SSHServerBase] No channel request from {addr}")
+                    logging.warning(f"[SSHServerBase] No channel request from {addr}")
                     session.close()
                     continue
 
-                threading.Thread(target=self.connection_function,
-                                 daemon=True,
-                                 args=(client, session, channel)).start()
+                username = self._server.last_login
+                thread = threading.Thread(target=self.connection_function,
+                                          daemon=True,
+                                          args=(client, session, channel, username))
+                thread.start()
+                logging.info(f"[SSHServerBase] Started thread {thread.ident} for {username}@{addr}")
 
             except socket.timeout:
                 pass

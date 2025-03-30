@@ -1,3 +1,4 @@
+import logging
 import os
 import sqlite3
 from src.utils_dn42 import as_maintained_by
@@ -127,7 +128,7 @@ class DatabaseManager:
             with self.connection:
                 self.connection.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
         except sqlite3.IntegrityError as e:
-            print(f"Error inserting peer: {e}")
+            logging.exception(f"[DatabaseManager] Error inserting peer")
             return False
         return True
 
@@ -147,5 +148,5 @@ class DatabaseManager:
                 self.connection.execute(query, (as_num,))
                 return True
         except sqlite3.Error as e:
-            print(f"Error removing peer: {e}")
+            logging.exception(f"[DatabaseManager] Error removing peer")
             return False

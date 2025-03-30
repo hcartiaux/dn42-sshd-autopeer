@@ -1,8 +1,11 @@
 import os
 import sys
 import argparse
+import logging
 
 def main():
+    logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.INFO)
+
     # Get the directory of the current script
     top_directory = os.path.dirname(os.path.realpath(__file__))
 
