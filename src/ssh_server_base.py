@@ -3,39 +3,54 @@ import socket
 import threading
 from abc import ABC, abstractmethod
 from sys import platform
-
-
 class SSHServerBase(ABC):
+    """
+    Abstract base class for creating a multi-threaded SSH server.
+
+    Provides a framework for setting up an SSH server with configurable
+    connection handling.
+
+    Attributes:
+        _is_running (threading.Event): Thread-safe flag to control server running state.
+        _socket (socket.socket): Socket used for listening to incoming connections.
+        _listen_thread (threading.Thread): Thread responsible for handling incoming connections.
+    """
 
     def __init__(self):
-        # create a multithreaded event, which is basically a
-        # thread-safe boolean
+        """
+        Initialize the SSH server base infrastructure.
+        """
         self._is_running = threading.Event()
-
-        # this socket will be used to listen to incoming connections
         self._socket = None
-
-        # this will contain the shell for the connected client.
-        # we don't yet initialize it, since we need to get the
-        # stdin and stdout objects after the connection is made.
-        self.client_shell = None
-
-        # this will contain the thread that will listen for incoming
-        # connections and data.
         self._listen_thread = None
 
     def set_server_interface(self, server_interface):
+        """
+        Set the server interface for SSH connection management.
+
+        Parameters:
+            server_interface: The paramiko server interface to handle SSH connections.
+        """
         self._server = server_interface
 
-    # To start the server, we open the socket and create
-    # the listening thread.
     def start(self, address='::1', port=22, timeout=1):
+        """
+        Start the SSH server and begin listening for incoming connections.
+
+        Sets up an IPv6 socket, configures socket options, and starts
+        a listening thread.
+
+        Parameters:
+            address (str, optional): IPv6 address to bind the server. Defaults to '::1'.
+            port (int, optional): Port number to listen on. Defaults to 22.
+            timeout (float, optional): Socket connection timeout. Defaults to 1 second.
+        """
         if not self._is_running.is_set():
             self._is_running.set()
             self._socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
 
-            # reuse port is not avaible on windows
+            # reuse port is not available on windows
             if platform == "linux" or platform == "linux2":
                 self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, True)
 
@@ -45,18 +60,25 @@ class SSHServerBase(ABC):
             self._listen_thread = threading.Thread(target=self._listen)
             self._listen_thread.start()
 
-    # To stop the server, we must join the listen thread
-    # and close the socket.
     def stop(self):
+        """
+        Gracefully stop the SSH server.
+
+        Clears the running state, waits for the listening thread to complete,
+        and closes the server socket.
+        """
         if self._is_running.is_set():
             self._is_running.clear()
             self._listen_thread.join()
             self._socket.close()
 
-    # The listen function will constantly run if the server is running.
-    # We wait for a connection, if a connection is made, we will call
-    # our connection function.
     def _listen(self):
+        """
+        Continuously listen for and handle incoming SSH connections.
+
+        Runs while the server is active, accepting client connections,
+        establishing SSH transport, and spawning connection handling threads.
+        """
         print("[SSHServerBase] Listening thread started")
         while self._is_running.is_set():
             try:
@@ -88,4 +110,15 @@ class SSHServerBase(ABC):
 
     @abstractmethod
     def connection_function(self, client, session, channel):
+        """
+        Abstract method to handle individual SSH connections.
+
+        Must be implemented by subclasses to define specific
+        connection handling logic.
+
+        Parameters:
+            client (socket.socket): The connected client socket.
+            session (paramiko.Transport): The SSH transport session.
+            channel (paramiko.Channel): The SSH communication channel.
+        """
         pass
