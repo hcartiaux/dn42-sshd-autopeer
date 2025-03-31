@@ -167,8 +167,8 @@ class ShellDn42(Cmd):
                 logging.exception(f"[{threading.get_ident()}][ShellDn42] ")
         except BaseException:
             logging.exception(f"[{threading.get_ident()}][ShellDn42] ")
-
-        self.db_manager.close()
+        finally:
+            self.db_manager.close()
 
     def print_topics(self, header, cmds, cmdlen, maxcol):
         """
