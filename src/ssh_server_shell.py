@@ -66,7 +66,7 @@ class SSHServerShell(SSHServerBase):
             self.client_shell.cmdloop()
         except BaseException:
             logging.exception(f"[{threading.get_ident()}][SSHServerShell] Execution error in the shell of {username}")
-
-        # Close the channel and transport after session ends
-        channel.close()
-        session.close()
+        finally:
+            # Close the channel and transport after session ends
+            channel.close()
+            session.close()
