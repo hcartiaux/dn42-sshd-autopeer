@@ -152,7 +152,7 @@ class ShellDn42(Cmd):
                     self.stdout.write(self.prompt)
                     self.stdout.flush()
                     line = self.prompt_line()
-                    if not len(line):
+                    if not line:
                         line = 'EOF'
                     else:
                         line = line.rstrip('\r\n')
