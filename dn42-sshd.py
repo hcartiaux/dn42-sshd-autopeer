@@ -10,7 +10,7 @@ def main():
     top_directory = os.path.dirname(os.path.realpath(__file__))
 
     # Define the path to the SSH host key file
-    host_key_file = top_directory + '/' + '/files/ssh-keys/ssh_host_rsa_key'
+    host_key_file = os.path.join(top_directory, 'files/ssh-keys/ssh_host_rsa_key')
 
     # Configuration environment variables
     os.environ['DN42_SSH_LISTEN_ADDRESS'] = os.getenv('DN42_SSH_LISTEN_ADDRESS', '::1')
@@ -48,8 +48,7 @@ def main():
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
 
         # Set the Message of the Day (MOTD) path for the peering server
-        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
-            'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/' + os.environ['DN42_SERVER'])
+        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv('DN42_SSH_MOTD_PATH', os.path.join(top_directory, 'files/motd', os.environ['DN42_SERVER']))
 
         # Create SSH server with ShellDn42 and DN42 authentication
         server = SSHServerShell(SSHServerAuthDn42, ShellDn42, host_key_file)
@@ -60,8 +59,7 @@ def main():
         from src.ssh_server_auth_none import SSHServerAuthNone
 
         # Set the MOTD path for the gaming server
-        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
-            'DN42_SSH_MOTD_PATH', top_directory + '/' + 'files/motd/motd_gaming_service')
+        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv('DN42_SSH_MOTD_PATH', os.path.join(top_directory, 'files/motd/motd_gaming_service'))
 
         # Specify the command to run (in this case, 'advent')
         cmd = 'advent'
