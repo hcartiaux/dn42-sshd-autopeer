@@ -16,9 +16,8 @@ def main():
     os.environ['DN42_SSH_LISTEN_ADDRESS'] = os.getenv('DN42_SSH_LISTEN_ADDRESS', '::1')
     os.environ['DN42_SSH_PORT'] = os.getenv('DN42_SSH_PORT', '8022')
     os.environ['DN42_SERVER'] = os.getenv('DN42_SERVER', 'nl-ams2.flap42.eu')
-    os.environ['DN42_DB_PATH'] = os.getenv('DN42_DB_PATH', top_directory + '/' + 'files/db/' + os.environ['DN42_SERVER'])
-    os.environ['DN42_REGISTRY_DIRECTORY'] = os.getenv(
-        'DN42_REGISTRY_DIRECTORY', top_directory + '/' + 'files/registry')
+    os.environ['DN42_DB_PATH'] = os.getenv('DN42_DB_PATH', os.path.join(top_directory, 'files/db', os.environ['DN42_SERVER']))
+    os.environ['DN42_REGISTRY_DIRECTORY'] = os.getenv('DN42_REGISTRY_DIRECTORY', os.path.join(top_directory, 'files/registry'))
     os.environ['DN42_ASN'] = os.getenv('DN42_ASN', '4242420263')
     os.environ['DN42_WG_PUB_KEY'] = os.getenv('DN42_WG_PUB_KEY', 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=')
     os.environ['DN42_WG_LINK_LOCAL'] = os.getenv('DN42_WG_LINK_LOCAL', 'fe80:0263::')
