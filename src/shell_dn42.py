@@ -249,7 +249,7 @@ class ShellDn42(Cmd):
         Returns:
             str: The input line read from the user.
         """
-        self.rich_print(text, newline=False)
+        self.rich_print(rich_object, newline=False)
         return self.prompt_line()
 
     #############
