@@ -75,10 +75,10 @@ def get_local_config(as_id):
 
 
 def peer_status(as_num):
-    wg_cmd = "wg show wg-peer-int"
-    wg_output = os.popen("ssh nl-ams2.flap sudo " + wg_cmd).read()
-    birdc_cmd = "birdc show protocols all ibgp_nl_ams1"
-    birdc_output = os.popen("ssh nl-ams2.flap sudo " + birdc_cmd).read()
+    wg_cmd = f"wg show wg-{ as_num }"
+    wg_output = os.popen(wg_cmd).read()
+    birdc_cmd = f"birdc show protocols all ibgp_{ as_num }"
+    birdc_output = os.popen(birdc_cmd).read()
     return "$ " + wg_cmd + "\n" + wg_output + \
         "\n$ " + birdc_cmd + "\n" + birdc_output
 
