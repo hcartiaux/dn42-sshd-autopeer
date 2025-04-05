@@ -15,7 +15,7 @@ options:
 
 ## Environment variables
 
-- 'DN42_SSH_HOST_KEY': path to the SSH host key file
+- `DN42_SSH_HOST_KEY`: path to the SSH host key file
 * `DN42_SSH_LISTEN_ADDRESS`: Default is `::1`
 * `DN42_SSH_PORT`: default is `8022`
 * `DN42_SERVER`: public domain name of the server
