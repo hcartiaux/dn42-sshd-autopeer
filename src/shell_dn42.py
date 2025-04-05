@@ -401,7 +401,7 @@ class ShellDn42(Cmd):
         self.emptyline()
         table = Table(title="Your existing peering sessions", style="blue")
         table.add_column("AS number", no_wrap=True)
-        table.add_column("Wireguard public key", no_wrap=True)
+        table.add_column("Wireguard public key")
         table.add_column("Endpoint address", no_wrap=True)
         table.add_column("Endpoint port", no_wrap=True)
         for as_num, peer_info in self.db_manager.get_peer_list(self.username).items():
