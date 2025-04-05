@@ -37,7 +37,7 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
             int: Authentication result (paramiko.AUTH_SUCCESSFUL or paramiko.AUTH_FAILED)
         """
         if not re.match("^[A-Za-z0-9-]+$", username):
-            logging.warn(f"[AuthDn42] Username {username} contains forbidden characters")
+            logging.warning(f"[AuthDn42] Username {username} contains forbidden characters")
         else:
             authorized_keys = load_authorized_keys(username)
             for authorized_key in authorized_keys:
