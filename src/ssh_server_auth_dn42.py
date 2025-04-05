@@ -6,6 +6,7 @@ import re
 import threading
 from pathlib import Path
 from src.utils_dn42 import load_authorized_keys
+from packaging.version import Version
 
 
 class SSHServerAuthDn42(paramiko.ServerInterface):
@@ -41,7 +42,10 @@ class SSHServerAuthDn42(paramiko.ServerInterface):
             authorized_keys = load_authorized_keys(username)
             for authorized_key in authorized_keys:
                 if authorized_key == key:
-                    logging.info(f"[AuthDn42] Authentication successful for {username} with {key.algorithm_name} key {key.fingerprint}")
+                    log_str = f"[AuthDn42] Authentication successful for {username}"
+                    if Version(paramiko.__version__) >= Version('3.2'):
+                        log_str += f" with {key.algorithm_name} key {key.fingerprint}"
+                    logging.info(log_str)
                     self.last_login = username
                     return paramiko.AUTH_SUCCESSFUL
             logging.warning(f"[AuthDn42] Authentication failed for {username}")
