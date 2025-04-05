@@ -71,3 +71,4 @@ class SSHServerShell(SSHServerBase):
             # Close the channel and transport after session ends
             channel.close()
             session.close()
+            logging.info(f"[{threading.get_ident()}][SSHServerShell] User {username} disconnected")
