@@ -63,6 +63,39 @@ def get_ipv6(host):
     except BaseException:
         return []
 
+def validate_ipv6(ip, forbidden_networks = []):
+    try:
+        import socket
+        import psutil
+        import ipaddress
+
+        is_private = False
+        is_local = False
+        is_forbidden = False
+
+        # Is ip a private address ?
+        is_private = ipaddress.ip_address(ip).is_private
+
+        # Is ip already configured on the local system ?
+        interfaces = psutil.net_if_addrs()
+        for interface, addrs in interfaces.items():
+            for addr in addrs:
+                if addr.family == socket.AF_INET6 and addr.address == ip:
+                    is_local = True
+                    break
+
+        # Is ip part of a network in forbidden_networks
+        ip_obj = ipaddress.ip_address(ip)
+        for network in forbidden_networks:
+            if ip_obj in ipaddress.ip_network(network, strict=False):
+                is_forbidden = True
+                break
+
+        return not (is_private or is_local or is_forbidden)
+
+    except BaseException:
+        return False
+
 # Interrogate peering info
 
 

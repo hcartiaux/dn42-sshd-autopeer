@@ -320,9 +320,14 @@ class ShellDn42(Cmd):
             return
 
         wg_endpoint_addr = self.rich_prompt("[bold blue]Wireguard endpoint address:[/] ")
-        if not get_ipv6(wg_endpoint_addr):
+        ipv6_list = get_ipv6(wg_endpoint_addr)
+        if not ipv6_list:
             self.rich_print('[red] :exclamation: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
             return
+        for ipv6 in ipv6_list:
+            if not validate_ipv6(ipv6):
+                self.rich_print(f'[red] :exclamation: The endpoint address {ipv6} is forbidden')
+                return
 
         wg_endpoint_port = self.rich_prompt("[bold blue]Wireguard endpoint port   :[/] ")
         if not match('^[0-9]+$', wg_endpoint_port):
