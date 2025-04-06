@@ -351,6 +351,10 @@ class ShellDn42(Cmd):
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
+        elif len(peer_list) == 0:
+            self.rich_print('[red] :exclamation: There is no existing peering session')
+            self.rich_print('[green] :information: Create a new peering session with [italic]peer_create[/italic]')
+            return
         else:
             as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
             if as_num not in peer_list:
@@ -427,6 +431,10 @@ class ShellDn42(Cmd):
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
+        elif len(peer_list) == 0:
+            self.rich_print('[red] :exclamation: There is no existing peering session')
+            self.rich_print('[green] :information: Create a new peering session with [italic]peer_create[/italic]')
+            return
         else:
             as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
             if as_num not in peer_list:
@@ -454,6 +462,10 @@ class ShellDn42(Cmd):
         peer_list = self.db_manager.get_peer_list(self.username).keys()
         if len(peer_list) == 1:
             as_num = next(iter(peer_list))
+        elif len(peer_list) == 0:
+            self.rich_print('[red] :exclamation: There is no existing peering session')
+            self.rich_print('[green] :information: Create a new peering session with [italic]peer_create[/italic]')
+            return
         else:
             as_num = self.rich_prompt("[bold blue]AS Number:[/] ")
             if as_num not in peer_list:
