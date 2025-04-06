@@ -1,6 +1,8 @@
 import logging
 import os
 import sqlite3
+import threading
+
 from src.utils_dn42 import as_maintained_by
 
 class DatabaseManager:
