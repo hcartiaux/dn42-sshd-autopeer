@@ -4,6 +4,16 @@ import os
 
 
 def load_authorized_keys(user):
+    """
+    Return a list of SSH keys for a user from the dn42 registry.
+
+    Parameters:
+        user (str): The user name (without -MNT) for which to load authorized keys,
+                    from the corresponding maintainer object.
+
+    Returns:
+        list: A list of authorized SSH keys.
+    """
     import paramiko
     import base64
     authorized_keys = []
@@ -27,6 +37,15 @@ def load_authorized_keys(user):
 
 
 def as_maintained_by(user):
+    """
+    Return a list of AS numbers maintained by a user from the dn42 registry.
+
+    Parameters:
+        user (str): The maintainer name (without -MNT) for which to find maintained AS numbers.
+
+    Returns:
+        list: A list of AS numbers maintained by the user.
+    """
     as_nums = []
 
     directory = os.environ['DN42_REGISTRY_DIRECTORY'] + "/data/aut-num"
@@ -47,6 +66,15 @@ def as_maintained_by(user):
 
 
 def get_ipv6(host):
+    """
+    Retrieve the IPv6 address(es) associated with a host.
+
+    Parameters:
+        host (str): The hostname to resolve or IP address to validate.
+
+    Returns:
+        list: A list containing the IPv6 address(es) of the host.
+    """
     try:
         # Is host an IP address ? If yes, return  [host]
         import socket
@@ -64,6 +92,17 @@ def get_ipv6(host):
         return []
 
 def validate_ipv6(ip, forbidden_networks = []):
+    """
+    Validate an IPv6 address, ensure that it is not private, configured locally or part
+    of a list of private networks.
+
+    Parameters:
+        ip (str): The IPv6 address to validate.
+        forbidden_networks (list): A list of forbidden network prefixes.
+
+    Returns:
+        bool: True if the IP is valid, False otherwise.
+    """
     try:
         import socket
         import psutil
@@ -100,6 +139,15 @@ def validate_ipv6(ip, forbidden_networks = []):
 
 
 def get_local_config(as_id):
+    """
+    Retrieve the local configuration for a given AS ID.
+
+    Parameters:
+        as_id (str): The AS ID for which to retrieve the configuration.
+
+    Returns:
+        dict: A dictionary containing the local configuration.
+    """
     local_config = {
         "wg_pub_key": os.environ['DN42_WG_PUB_KEY'],
         "wg_endpoint_addr": os.environ['DN42_SERVER'],
@@ -110,6 +158,15 @@ def get_local_config(as_id):
 
 
 def peer_status(as_num):
+    """
+    Retrieve the status of a peer AS number.
+
+    Parameters:
+        as_num (str): The AS number of the peer.
+
+    Returns:
+        str: The status output of the peer.
+    """
     wg_cmd = f"wg show wg-{ as_num }"
     wg_output = os.popen(wg_cmd).read()
     birdc_cmd = f"birdc show protocols all ibgp_{ as_num }"
@@ -121,6 +178,18 @@ def peer_status(as_num):
 
 
 def gen_wireguard_config(user, as_id, wg_endpoint_port, link_local):
+    """
+    Generate the WireGuard configuration for a peering session.
+
+    Parameters:
+        user (str): The user name.
+        as_id (str): The AS ID.
+        wg_endpoint_port (str): The WireGuard endpoint port.
+        link_local (str): The link-local address.
+
+    Returns:
+        str: The WireGuard configuration as a string.
+    """
     local_config = get_local_config(as_id)
 
     wireguard = f"""
@@ -140,6 +209,17 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
 
 
 def gen_bird_config(user, as_num, as_id):
+    """
+    Generate the BIRD configuration for a peering session
+
+    Parameters:
+        user (str): The user name.
+        as_num (str): The AS number.
+        as_id (str): The AS ID.
+
+    Returns:
+        str: The BIRD configuration as a string.
+    """
     local_config = get_local_config(as_id)
 
     bird = f"""
