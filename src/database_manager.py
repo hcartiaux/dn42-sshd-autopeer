@@ -32,7 +32,7 @@ class DatabaseManager:
         with self.connection:
             self.connection.execute("""
             CREATE TABLE IF NOT EXISTS peering_links (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY CHECK(id BETWEEN 1 AND 65535),
                 as_num INTEGER UNIQUE NOT NULL,
                 wg_pub_key TEXT NOT NULL,
                 wg_endpoint_addr TEXT NOT NULL,
@@ -120,14 +120,58 @@ class DatabaseManager:
         Returns:
             bool: True if the peer was successfully inserted, False otherwise.
         """
+
+        # From https://stackoverflow.com/a/907300/1908136
+        # We get the first available id, and use a transaction to avoid a potential race conditions
+        # The reason is to allow id re-use, the id field must not exceed 65535 (16 bit integer),
+        # because it is used to calculate a part of the peering links link-local IPv6
+        # It should be enough for a few years given the number of Dn42 participants
         query = """
-        INSERT INTO peering_links (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port)
-        VALUES (?, ?, ?, ?)
+        WITH unused_id AS (
+            SELECT  id
+            FROM    (
+                    SELECT  1 AS id
+                    ) q1
+            WHERE   NOT EXISTS
+                    (
+                    SELECT  1
+                    FROM    peering_links
+                    WHERE   id = 1
+                    )
+            UNION ALL
+            SELECT  *
+            FROM    (
+                    SELECT  id + 1
+                    FROM    peering_links t
+                    WHERE   NOT EXISTS
+                            (
+                            SELECT  1
+                            FROM    peering_links ti
+                            WHERE   ti.id = t.id + 1
+                            )
+                    ORDER BY
+                            id
+                    LIMIT 1
+                    ) q2
+            ORDER BY
+                    id
+            LIMIT 1
+        )
+        INSERT INTO peering_links (
+                                    id,
+                                    as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
+                                  )
+        VALUES (
+                (SELECT id FROM unused_id),
+                ?, ?, ?, ?
+               );
         """
         try:
-            with self.connection:
-                self.connection.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
-        except sqlite3.IntegrityError as e:
+            self.connection.execute('BEGIN TRANSACTION')
+            self.connection.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
+            self.connection.execute('COMMIT')
+        except sqlite3.IntegrityError:
+            self.connection.execute('ROLLBACK')
             logging.exception(f"[DatabaseManager] Error inserting peer")
             return False
         return True
