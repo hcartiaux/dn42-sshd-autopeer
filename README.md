@@ -1,8 +1,8 @@
-# dn42 as4242420263 custom SSHD service
+# dn42 AS4242420263 custom SSHD service
 
 This is the source of my dn42 automatic peering self-service.
 It implements a SSH server in Python 3, using [Paramiko](https://github.com/paramiko/paramiko/),
-allowing dn42 AS maintainers to request and configure peering sessions with as4242420263 by themselves.
+allowing dn42 AS maintainers to request and configure peering sessions with AS4242420263 by themselves.
 The peering information is stored in a SQLite database.
 
 ## Usage
