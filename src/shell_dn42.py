@@ -294,7 +294,10 @@ class ShellDn42(Cmd):
 
     def do_peer_create(self, arg):
         """
-        Guides the user through creating a new peering session by:
+        Interactive process to create a new peering session.
+        """
+        """
+        Steps:
         - Validating AS number
         - Collecting WireGuard public key
         - Gathering endpoint address and port
@@ -348,7 +351,8 @@ class ShellDn42(Cmd):
     def do_peer_config(self, arg):
         """
         Show the configuration for an existing peering session.
-
+        """
+        """
         Displays detailed configuration information including:
         - Remote peer configuration
         - Local configuration
@@ -407,8 +411,9 @@ class ShellDn42(Cmd):
 
     def do_peer_list(self, arg):
         """
-        List existing peering sessions for the current user.
-
+        List your existing peering sessions.
+        """
+        """
         Displays a table with details of all current peering sessions,
         including AS number, WireGuard public key, and endpoint information.
         """
@@ -429,7 +434,8 @@ class ShellDn42(Cmd):
     def do_peer_remove(self, arg):
         """
         Remove an existing peering session.
-
+        """
+        """
         Guides the user through the process of removing a peering session:
         - Selects the AS number to remove
         - Requests user confirmation
@@ -460,7 +466,8 @@ class ShellDn42(Cmd):
     def do_peer_status(self, arg):
         """
         Print the current status of a peering session.
-
+        """
+        """
         Retrieves and displays the status of a specific peering session:
         - Selects the AS number
         - Retrieves status information
