@@ -328,6 +328,9 @@ class ShellDn42(Cmd):
         if not match('^[0-9]+$', wg_endpoint_port):
             self.rich_print('[red] :exclamation: Malformed port number (^[0-9]+$)')
             return
+        if not (1 <= int(wg_endpoint_port) <= 65535):
+            self.rich_print('[red] :exclamation: Malformed port number ([1;65535])')
+            return
 
         if self.db_manager.peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
             self.rich_print(f'[green]The peering session has been created for AS{as_num}')
