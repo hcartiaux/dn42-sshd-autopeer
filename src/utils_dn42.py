@@ -48,6 +48,7 @@ def as_maintained_by(user):
 
 def get_ipv6(host):
     try:
+        # Is host an IP address ? If yes, return  [host]
         import socket
         socket.inet_pton(socket.AF_INET6, host)
         return [host]
@@ -55,6 +56,7 @@ def get_ipv6(host):
         pass
 
     try:
+        # if host is a domain name, returns all the AAAA records or [] if none
         from dns import resolver
         answers = resolver.resolve(host, 'AAAA')
         return [rdata.address for rdata in answers]
