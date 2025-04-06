@@ -26,6 +26,7 @@ options:
 * `DN42_WG_PUB_KEY`: Wireguard public key used for all the tunnels
 * `DN42_WG_LINK_LOCAL`: link-local IPv6 base address used on the wireguard interfaces, without the last 4 bytes
 * `DN42_WG_BASE_PORT`: Wireguard base port
+* `DN42_RESERVED_NETWORK`: refuse all peering creation to servers inside this network
 
 ## Internals
 

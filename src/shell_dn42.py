@@ -324,8 +324,10 @@ class ShellDn42(Cmd):
         if not ipv6_list:
             self.rich_print('[red] :exclamation: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
             return
+
+        forbidden_net = os.environ['DN42_RESERVED_NETWORK']
         for ipv6 in ipv6_list:
-            if not validate_ipv6(ipv6):
+            if not validate_ipv6(ipv6, [forbidden_net] if forbidden_net else []):
                 self.rich_print(f'[red] :exclamation: The endpoint address {ipv6} is forbidden')
                 return
 
