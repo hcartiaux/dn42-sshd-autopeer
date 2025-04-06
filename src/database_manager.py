@@ -172,7 +172,7 @@ class DatabaseManager:
             self.connection.execute('COMMIT')
         except sqlite3.IntegrityError:
             self.connection.execute('ROLLBACK')
-            logging.exception(f"[DatabaseManager] Error inserting peer")
+            logging.exception(f"[{threading.get_ident()}][DatabaseManager] Error inserting peer")
             return False
         return True
 
@@ -191,6 +191,6 @@ class DatabaseManager:
             with self.connection:
                 self.connection.execute(query, (as_num,))
                 return True
-        except sqlite3.Error as e:
-            logging.exception(f"[DatabaseManager] Error removing peer")
+        except sqlite3.Error:
+            logging.exception(f"[{threading.get_ident()}][DatabaseManager] Error Removing peer")
             return False

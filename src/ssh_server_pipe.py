@@ -97,7 +97,7 @@ class SSHServerPipe(SSHServerBase):
                             channel.send(data)
 
         except BaseException:
-            logging.exception("[{threading.get_ident()}][SSHServerPipe] Execution error")
+            logging.exception(f"[{threading.get_ident()}][SSHServerPipe] Execution error")
 
         # Close the channel and transport after session ends
         channel.close()
