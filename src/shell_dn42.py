@@ -8,6 +8,9 @@ from rich.table import Table
 from rich.text import Text
 from src.database_manager import DatabaseManager
 from src.utils_dn42 import *
+from src.utils_config import *
+from src.utils_network import *
+
 
 class ShellDn42(Cmd):
     """
