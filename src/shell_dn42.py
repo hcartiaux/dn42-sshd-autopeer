@@ -109,7 +109,7 @@ class ShellDn42(Cmd):
             if not ch:
                 break
             # Strip escape sequences
-            if ord(ch) == int("1b",16):
+            if ord(ch) == int("1b", 16):
                 self.stdin.read(2).decode("utf-8", "ignore")
                 continue
             if ch not in self._allowed_chars:
@@ -400,7 +400,8 @@ class ShellDn42(Cmd):
         # WireGuard configuration table
         table_wg = Table(style='blue')
         table_wg.add_column(f"Wireguard configuration for AS{as_num}", no_wrap=True)
-        table_wg.add_row(Text(gen_wireguard_config(self.username, as_id, peer_config['wg_endpoint_port'], peer_config['link_local'])))
+        table_wg.add_row(Text(gen_wireguard_config(self.username, as_id,
+                         peer_config['wg_endpoint_port'], peer_config['link_local'])))
         self.rich_print(table_wg)
 
         # Bird configuration table

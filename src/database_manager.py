@@ -5,6 +5,7 @@ import threading
 
 from src.utils_dn42 import as_maintained_by
 
+
 class DatabaseManager:
     """
     A manager class for handling interactions with an SQLite database, specifically for managing peering links.

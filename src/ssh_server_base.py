@@ -78,7 +78,7 @@ class SSHServerBase(ABC):
         Runs while the server is active, accepting client connections,
         establishing SSH transport, and spawning connection handling threads.
         """
-        logging.info(f"[SSHServerBase] Listening thread started")
+        logging.info("[SSHServerBase] Listening thread started")
         while self._is_running.is_set():
             try:
                 self._socket.listen()
