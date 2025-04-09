@@ -1,11 +1,36 @@
-# dn42 AS4242420263 custom SSHD service
+# DN42 Auto-Peering SSH Service (AS4242420263)
 
-This is the source of my dn42 automatic peering self-service.
-It implements a SSH server in Python 3, using [Paramiko](https://github.com/paramiko/paramiko/),
-allowing dn42 AS maintainers to request and configure peering sessions with AS4242420263 by themselves.
-The peering information is stored in a SQLite database.
+A Python-based self-service SSH server that enables dn42 network maintainers
+to automatically establish and manage peering connections with AS4242420263.
 
-## Usage
+## Overview
+
+This project implements a custom SSH server using [Paramiko](https://github.com/paramiko/paramiko/)
+that authenticates users against the dn42 registry. It allows network operators to request peering
+sessions without manual intervention, storing all peering information in a SQLite database.
+
+## Quick Start
+
+### Prerequisites
+
+- Debian >= 12
+- Python 3
+- Required packages: `git`, `python3-dnspython`, `python3-packaging`, `python3-paramiko`, `python3-psutil`, `python3-rich`
+- A local clone of the [dn42 registry](https://git.dn42.dev/dn42/registry)
+
+### Installation
+
+1. Clone this repository
+2. Install dependencies: `apt install git python3-dnspython python3-packaging python3-paramiko python3-psutil python3-rich`
+3. Set up environment variables (see Configuration section)
+4. Run the server:
+
+```
+$ python dn42-sshd.py --peering
+2025-04-06 22:15:34,391:INFO:[SSHServerBase] Listening thread started
+```
+
+### Usage
 
 ```
 usage: dn42-sshd [-h] (--gaming | --peering)
@@ -16,42 +41,30 @@ options:
   --peering   Start the auto peering server
 ```
 
-Starts the serer in peering mode
+## Configuration
 
-```
-$ python dn42-sshd.py --peering
-2025-04-06 22:15:34,391:INFO:[SSHServerBase] Listening thread started
-```
-
-## Environment variables
+### Environment variables
 
 These environment variables can be set to configure the service
 
-- `DN42_SSH_HOST_KEY`: path to the SSH host key file
-* `DN42_SSH_LISTEN_ADDRESS`: Default is `::1`
-* `DN42_SSH_PORT`: default is `8022`
-* `DN42_SERVER`: public domain name of the server
-* `DN42_SSH_MOTD_PATH`: path of a custom `motd` file
-* `DN42_DB_PATH`: path of the SQLite database file
-* `DN42_REGISTRY_DIRECTORY`: path of a local git clone of [the dn42 registry repository](https://git.dn42.dev/dn42/registry), used for the peering service authentication
-* `DN42_ASN`: dn42 Autonomous System Number
-* `DN42_WG_PUB_KEY`: Wireguard public key used for all the tunnels
-* `DN42_WG_LINK_LOCAL`: link-local IPv6 base address used on the WireGuard interfaces, without the last 4 bytes
-* `DN42_WG_BASE_PORT`: WireGuard base port
-* `DN42_RESERVED_NETWORK`: refuse all peering creation for servers inside this network
+| Variable                  | Description                                           | Default                   |
+|---------------------------|-------------------------------------------------------|---------------------------|
+| `DN42_SSH_HOST_KEY`       | Path to SSH host key file                             | Required                  |
+| `DN42_SSH_LISTEN_ADDRESS` | Listen address                                        | `::1`                     |
+| `DN42_SSH_PORT`           | SSH port                                              | `4242`                    |
+| `DN42_SERVER`             | Public domain name of the server                      | `nl-ams2.flap42.eu`       |
+| `DN42_SSH_MOTD_PATH`      | Path to custom MOTD file                              | `files/motd/$DN42_SERVER` |
+| `DN42_DB_PATH`            | Path to SQLite database file                          | `files/db/$DN42_SERVER`   |
+| `DN42_REGISTRY_DIRECTORY` | Path to dn42 registry clone                           | `files/registry`          |
+| `DN42_ASN`                | Your dn42 Autonomous System Number                    | `4242420263`              |
+| `DN42_WG_PUB_KEY`         | WireGuard public key for tunnels                      | `rj0SORruOE/hGV...`       |
+| `DN42_WG_LINK_LOCAL`      | IPv6 link-local base address (without last 4 bytes)   | `fe80:0263::`             |
+| `DN42_WG_BASE_PORT`       | Base WireGuard port                                   | `52000`                   |
+| `DN42_RESERVED_NETWORK`   | Network where peering is restricted                   | None                      |
 
 ## Installation
 
 I deploy this service on Debian using [my own ansible role](https://github.com/hcartiaux/ansible/tree/main/roles/dn42_autopeer).
-
-It requires these dependencies to be installed with `apt`:
-
-* `git`
-* `python3-dnspython`
-* `python3-packaging`
-* `python3-paramiko`
-* `python3-psutil`
-* `python3-rich`
 
 This is an example of a systemd service unit (`/etc/systemd/system/dn42-sshd.service`).
 
@@ -173,7 +186,7 @@ CREATE TABLE IF NOT EXISTS peering_links (
     wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535)
 ```
 
-## External resource
+## External resources
 
-I've used [ramonmeza/PythonSSHServerTutorial](https://github.com/ramonmeza/PythonSSHServerTutorial/),
-which describes how-to create a SSH server using Python 3 and Paramiko, as a starting point for this project.
+- [Ansible role for deployment](https://github.com/hcartiaux/ansible/tree/main/roles/dn42_autopeer)
+- [PythonSSHServerTutorial](https://github.com/ramonmeza/PythonSSHServerTutorial/) (Used as a starting point)
