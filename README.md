@@ -1,4 +1,4 @@
-# DN42 Auto-Peering SSH Service (AS4242420263)
+# dn42 Auto-Peering SSH Service (AS4242420263)
 
 A Python-based self-service SSH server that enables dn42 network maintainers
 to automatically establish and manage peering connections with AS4242420263.
@@ -145,7 +145,7 @@ Apr 06 22:14:51 nl-ams2 python3[9780]: 2025-04-06 22:14:51,924:INFO:[13977727065
 
 Accept all connections
 
-#### Dn42 registry, class [`SSHServerAuthDn42`](https://github.com/hcartiaux/dn42-sshd-autopeer/blob/main/src/ssh_server_auth_dn42.py)
+#### dn42 registry, class [`SSHServerAuthDn42`](https://github.com/hcartiaux/dn42-sshd-autopeer/blob/main/src/ssh_server_auth_dn42.py)
 
 Accept connections based on the [dn42 maintainer objects](https://dn42.eu/howto/Registry-Authentication#how-authentication-works_authentication-using-an-ssh-key_auth-attribute-format-when-using-an-ssh-key), using the defined public key(s)
 
