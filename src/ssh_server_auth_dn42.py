@@ -1,9 +1,7 @@
-import base64
 import logging
 import os
 import paramiko
 import re
-import threading
 from pathlib import Path
 from src.utils_dn42 import load_authorized_keys
 from packaging.version import Version
