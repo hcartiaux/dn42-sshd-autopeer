@@ -42,12 +42,11 @@ def peer_status(as_num):
 # Gen config
 
 
-def gen_wireguard_peer_config(user, as_id, wg_endpoint_port, link_local):
+def gen_wireguard_peer_config(as_id, wg_endpoint_port, link_local):
     """
-    Generate the WireGuard configuration for a peering session.
+    Generate the WireGuard configuration for a peering session (remote side).
 
     Parameters:
-        user (str): The user name.
         as_id (str): The AS ID.
         wg_endpoint_port (str): The WireGuard endpoint port.
         link_local (str): The link-local address.
@@ -73,12 +72,11 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
     return wireguard
 
 
-def gen_bird_peer_config(user, as_num, as_id):
+def gen_bird_peer_config(as_num, as_id):
     """
-    Generate the BIRD configuration for a peering session
+    Generate the BIRD configuration for a peering session (remote side)
 
     Parameters:
-        user (str): The user name.
         as_num (str): The AS number.
         as_id (str): The AS ID.
 
