@@ -403,14 +403,14 @@ class ShellDn42(Cmd):
         # WireGuard configuration table
         table_wg = Table(style='blue')
         table_wg.add_column(f"Wireguard configuration for AS{as_num}", no_wrap=True)
-        table_wg.add_row(Text(gen_wireguard_config(self.username, as_id,
+        table_wg.add_row(Text(gen_wireguard_peer_config(self.username, as_id,
                          peer_config['wg_endpoint_port'], peer_config['link_local'])))
         self.rich_print(table_wg)
 
         # Bird configuration table
         table_bird = Table(style='blue')
         table_bird.add_column(f"Bird configuration for AS{as_num}", no_wrap=True)
-        table_bird.add_row(Text(gen_bird_config(self.username, as_num, as_id)))
+        table_bird.add_row(Text(gen_bird_peer_config(self.username, as_num, as_id)))
         self.rich_print(table_bird)
 
     def do_peer_list(self, arg):
