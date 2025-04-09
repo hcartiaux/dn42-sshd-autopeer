@@ -15,15 +15,15 @@ sessions without manual intervention, storing all peering information in a SQLit
 
 - Debian >= 12
 - Python 3
-- Required packages: `git`, `python3-dnspython`, `python3-packaging`, `python3-paramiko`, `python3-psutil`, `python3-rich`
-- A local clone of the [dn42 registry](https://git.dn42.dev/dn42/registry)
 
 ### Installation
 
 1. Clone this repository
-2. Install dependencies: `apt install git python3-dnspython python3-packaging python3-paramiko python3-psutil python3-rich`
-3. Set up environment variables (see Configuration section)
-4. Run the server:
+2. Clone the [dn42 registry](https://git.dn42.dev/dn42/registry)
+3. Install dependencies: `apt install git python3-dnspython python3-packaging python3-paramiko python3-psutil python3-rich`
+4. Generate a SSH host key with `ssh-keygen`
+5. Set up environment variables (see Configuration section)
+6. Run the server:
 
 ```
 $ python dn42-sshd.py --peering
@@ -47,20 +47,20 @@ options:
 
 These environment variables can be set to configure the service
 
-| Variable                  | Description                                           | Default                   |
-|---------------------------|-------------------------------------------------------|---------------------------|
-| `DN42_SSH_HOST_KEY`       | Path to SSH host key file                             | Required                  |
-| `DN42_SSH_LISTEN_ADDRESS` | Listen address                                        | `::1`                     |
-| `DN42_SSH_PORT`           | SSH port                                              | `4242`                    |
-| `DN42_SERVER`             | Public domain name of the server                      | `nl-ams2.flap42.eu`       |
-| `DN42_SSH_MOTD_PATH`      | Path to custom MOTD file                              | `files/motd/$DN42_SERVER` |
-| `DN42_DB_PATH`            | Path to SQLite database file                          | `files/db/$DN42_SERVER`   |
-| `DN42_REGISTRY_DIRECTORY` | Path to dn42 registry clone                           | `files/registry`          |
-| `DN42_ASN`                | Your dn42 Autonomous System Number                    | `4242420263`              |
-| `DN42_WG_PUB_KEY`         | WireGuard public key for tunnels                      | `rj0SORruOE/hGV...`       |
-| `DN42_WG_LINK_LOCAL`      | IPv6 link-local base address (without last 4 bytes)   | `fe80:0263::`             |
-| `DN42_WG_BASE_PORT`       | Base WireGuard port                                   | `52000`                   |
-| `DN42_RESERVED_NETWORK`   | Network where peering is restricted                   | None                      |
+| Variable                  | Description                                           | Default                           |
+|---------------------------|-------------------------------------------------------|-----------------------------------|
+| `DN42_SSH_HOST_KEY`       | Path to SSH host key file                             | `files/ssh-keys/ssh_host_rsa_key` |
+| `DN42_SSH_LISTEN_ADDRESS` | Listen address                                        | `::1`                             |
+| `DN42_SSH_PORT`           | SSH port                                              | `4242`                            |
+| `DN42_SERVER`             | Public domain name of the server                      | `nl-ams2.flap42.eu`               |
+| `DN42_SSH_MOTD_PATH`      | Path to custom MOTD file                              | `files/motd/$DN42_SERVER`         |
+| `DN42_DB_PATH`            | Path to SQLite database file                          | `files/db/$DN42_SERVER`           |
+| `DN42_REGISTRY_DIRECTORY` | Path to dn42 registry clone                           | `files/registry`                  |
+| `DN42_ASN`                | Your dn42 Autonomous System Number                    | `4242420263`                      |
+| `DN42_WG_PUB_KEY`         | WireGuard public key for tunnels                      | `rj0SORruOE/hGV...`               |
+| `DN42_WG_LINK_LOCAL`      | IPv6 link-local base address (without last 4 bytes)   | `fe80:0263::`                     |
+| `DN42_WG_BASE_PORT`       | Base WireGuard port                                   | `52000`                           |
+| `DN42_RESERVED_NETWORK`   | Network where peering is restricted                   | None                              |
 
 ## Installation
 
