@@ -71,3 +71,64 @@ def validate_ipv6(ip, forbidden_networks=[]):
 
     except BaseException:
         return False
+
+def get_latency(host):
+    """
+    Measure the average latency to a host using ping.
+
+    Parameters:
+        host (str): The hostname or IP address to ping.
+
+    Returns:
+        float or None: The average round-trip time in milliseconds, or None if the ping failed
+                      or the average time couldn't be parsed from the output.
+    """
+    from subprocess import Popen
+
+    ping = subprocess.Popen(
+        ["ping", "-c", "4", host],
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE
+    )
+    out, error = ping.communicate()
+
+    # Parse the average time from the output
+    # Example output line: "rtt min/avg/max/mdev = 20.923/21.548/21.947/0.388 ms"
+    avg_pattern = r'min/avg/max/mdev = \d+\.\d+/(\d+\.\d+)/\d+\.\d+/\d+\.\d+'
+    match = re.search(avg_pattern, out.decode('utf-8'))
+
+    if match:
+        return float(match.group(1))
+    else:
+        return None
+
+def get_latency_bgp_community(lat):
+    """
+    Return a BGP community value (1-9) based on the provided latency number.
+
+    Implements the values given here: https://dn42.eu/howto/BGP-communities
+
+    Args:
+        lat (float): Latency value in milliseconds
+
+    Returns:
+        int: Community number between 1 and 9
+    """
+    if lat <= 2.7:
+        return 1
+    elif lat <= 7.3:
+        return 2
+    elif lat <= 20:
+        return 3
+    elif lat <= 55:
+        return 4
+    elif lat <= 148:
+        return 5
+    elif lat <= 403:
+        return 6
+    elif lat <= 1097:
+        return 7
+    elif lat <= 2981:
+        return 8
+    else:
+        return 9
