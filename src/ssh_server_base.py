@@ -92,8 +92,16 @@ class SSHServerBase(ABC):
                 # start the SSH server
                 try:
                     session.start_server(server=self._server)
+                except ConnectionResetError:
+                    logging.error(f"[SSHServerBase] Connection reset by peer")
+                    continue
                 except paramiko.SSHException:
-                    return
+                    logging.exception(f"[SSHServerBase] SSHException in _listen()")
+                    continue
+                except:
+                    logging.exception(f"[SSHServerBase] Unmanaged exception")
+                    continue
+
                 channel = session.accept()
                 if channel is None:
                     logging.warning(f"[SSHServerBase] No channel request from {addr}")
