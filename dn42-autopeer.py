@@ -26,18 +26,24 @@ def main():
     os.environ['DN42_WG_LINK_LOCAL'] = os.getenv('DN42_WG_LINK_LOCAL', 'fe80:0263::')
     os.environ['DN42_WG_BASE_PORT'] = os.getenv('DN42_WG_BASE_PORT', '52000')
     os.environ['DN42_RESERVED_NETWORK'] = os.getenv('DN42_RESERVED_NETWORK', '')
+    os.environ['DN42_WG_CONFIG_DIR'] = os.getenv('DN42_WG_CONFIG_DIR', 'files/wireguard')
+    os.environ['DN42_BIRD_CONFIG_DIR'] = os.getenv('DN42_BIRD_CONFIG_DIR', 'files/bird')
 
     # Command line parameters
     # Set up command-line argument parsing
     parser = argparse.ArgumentParser(prog='dn42-sshd')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        '--gaming',
-        help='Start the gaming server',
+        '--server',
+        help='Start the auto peering server',
         action='store_true')
     group.add_argument(
-        '--peering',
-        help='Start the auto peering server',
+        '--genconfig',
+        help='Generate the configuration from the peering db',
+        action='store_true')
+    group.add_argument(
+        '--gaming',
+        help='Start the gaming server',
         action='store_true')
     try:
         args = parser.parse_args()
@@ -45,18 +51,22 @@ def main():
         sys.exit(1)
 
     # Configure and start the server based on the selected mode
-    if args.peering:
+    if args.server:
         # Peering mode: Create an SSH server, authenticates based of Dn42 registry maintainer objects
         from src.shell_dn42 import ShellDn42
         from src.ssh_server_shell import SSHServerShell
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
 
         # Set the Message of the Day (MOTD) path for the peering server
-        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv('DN42_SSH_MOTD_PATH', os.path.join(
-            top_directory, 'files/motd', os.environ['DN42_SERVER']))
+        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
+            'DN42_SSH_MOTD_PATH', os.path.join(top_directory, 'files/motd', os.environ['DN42_SERVER']))
 
         # Create SSH server with ShellDn42 and DN42 authentication
         server = SSHServerShell(SSHServerAuthDn42, ShellDn42, host_key_file)
+
+        # Start the server with the specified listen address and port
+        # If no address/port specified, it defaults to 127.0.0.1:22
+        server.start(os.environ['DN42_SSH_LISTEN_ADDRESS'], int(os.environ['DN42_SSH_PORT']))
 
     elif args.gaming:
         # Gaming mode: Create an SSH server without authentication, running a specific command
@@ -73,9 +83,16 @@ def main():
         # Create SSH server that accepts all connections and pipes input/output to the specified command
         server = SSHServerPipe(SSHServerAuthNone, cmd, host_key_file)
 
-    # Start the server with the specified listen address and port
-    # If no address/port specified, it defaults to 127.0.0.1:22
-    server.start(os.environ['DN42_SSH_LISTEN_ADDRESS'], int(os.environ['DN42_SSH_PORT']))
+        # Start the server with the specified listen address and port
+        # If no address/port specified, it defaults to 127.0.0.1:22
+        server.start(os.environ['DN42_SSH_LISTEN_ADDRESS'], int(os.environ['DN42_SSH_PORT']))
+
+#    elif args.genconfig:
+#        from src.utils_config import gen_wireguard_local_config, gen_bird_local_config
+#
+#        print(gen_wireguard_local_config('4242420263'))
+#        print(gen_bird_local_config('4242420263'))
+
 
 
 if __name__ == '__main__':
