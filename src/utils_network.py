@@ -83,7 +83,8 @@ def get_latency(host):
         float or None: The average round-trip time in milliseconds, or None if the ping failed
                       or the average time couldn't be parsed from the output.
     """
-    from subprocess import Popen
+    import re
+    import subprocess
 
     ping = subprocess.Popen(
         ["ping", "-c", "4", host],
