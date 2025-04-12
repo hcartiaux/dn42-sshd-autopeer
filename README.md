@@ -26,19 +26,21 @@ sessions without manual intervention, storing all peering information in a SQLit
 6. Run the server:
 
 ```
-$ python dn42-sshd.py --peering
+$ python dn42-autopeer.py --server
 2025-04-06 22:15:34,391:INFO:[SSHServerBase] Listening thread started
 ```
 
 ### Usage
 
 ```
-usage: dn42-sshd [-h] (--gaming | --peering)
+python dn42-autopeer.py --help                                                                                                                                (↑✗main)
+usage: dn42-sshd [-h] (--server | --genconfig | --gaming)
 
 options:
-  -h, --help  show this help message and exit
-  --gaming    Start the gaming server
-  --peering   Start the auto peering server
+  -h, --help   show this help message and exit
+  --server     Start the auto peering server
+  --genconfig  Generate the configuration from the peering db
+  --gaming     Start the gaming server
 ```
 
 ## Configuration
