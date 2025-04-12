@@ -32,9 +32,9 @@ def peer_status(as_num):
     Returns:
         str: The status output of the peer.
     """
-    wg_cmd = f"wg show wg-{as_num}"
+    wg_cmd = f"wg show wg-as{as_num}"
     wg_output = os.popen(wg_cmd).read()
-    birdc_cmd = f"birdc show protocols all ibgp_{as_num}"
+    birdc_cmd = f"birdc show protocols all ebgp_{as_num}"
     birdc_output = os.popen(birdc_cmd).read()
     return "$ " + wg_cmd + "\n" + wg_output + \
         "\n$ " + birdc_cmd + "\n" + birdc_output
