@@ -65,18 +65,28 @@ class DatabaseManager:
         row = cursor.fetchone()
         return row['id'] if row else None
 
-    def get_peer_config(self, user, as_num):
+    def get_peer_config(self, as_num):
         """
-        Get the peer configuration for a specific AS number maintained by a user.
+        Get the peer configuration for a specific AS number.
 
         Parameters:
-            user (str): The user maintaining the AS numbers.
             as_num (int): The AS number for which to retrieve the peer configuration.
 
         Returns:
             dict or None: The peer configuration details, or None if not found.
         """
-        return self.get_peer_list(user).get(str(as_num))
+        cursor = self.connection.execute("SELECT * FROM peering_links WHERE as_num = ?", (as_num,))
+        row = cursor.fetchone()
+        if row:
+            return {
+                "id": row["id"],
+                "wg_pub_key": row["wg_pub_key"],
+                "wg_endpoint_addr": row["wg_endpoint_addr"],
+                "wg_endpoint_port": str(row["wg_endpoint_port"]),
+                "link_local": f"{os.environ['DN42_WG_LINK_LOCAL']}2:{hex(row['id'])[2:]}"
+            }
+        else:
+            return None
 
     def get_peer_list(self, user):
         """
@@ -89,26 +99,14 @@ class DatabaseManager:
             dict: A dictionary containing the peer details, keyed by AS number.
         """
         as_nums = as_maintained_by(user)
-        placeholders = ','.join('?' * len(as_nums))
-        query = f"""
-        SELECT id, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
-        FROM peering_links
-        WHERE as_num IN ({placeholders})
-        """
+        peer_list = {}
 
-        cursor = self.connection.execute(query, as_nums)
-        rows = cursor.fetchall()
+        for as_num in as_nums:
+            peer_config = self.get_peer_config(as_num)
+            if peer_config:
+                peer_list[str(as_num)] = peer_config
 
-        return {
-            str(row["as_num"]): {
-                "id": row["id"],
-                "wg_pub_key": row["wg_pub_key"],
-                "wg_endpoint_addr": row["wg_endpoint_addr"],
-                "wg_endpoint_port": str(row["wg_endpoint_port"]),
-                "link_local": f"{os.environ['DN42_WG_LINK_LOCAL']}2:{hex(row['id'])[2:]}"
-            }
-            for row in rows
-        }
+        return peer_list
 
     def peer_create(self, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
         """

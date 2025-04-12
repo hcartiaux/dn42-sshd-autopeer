@@ -376,7 +376,7 @@ class ShellDn42(Cmd):
                 self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], create a new one with [italic]peer_create[/italic]')
                 return
 
-        peer_config = self.db_manager.get_peer_config(self.username, as_num)
+        peer_config = self.db_manager.get_peer_config(as_num)
 
         # Remote peer configuration table
         table_remote = Table(style='blue')
