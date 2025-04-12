@@ -3,3 +3,5 @@ files/ssh-keys
 files/registry
 files/db
 files/motd/3d.flf
+files/wireguard
+files/bird
