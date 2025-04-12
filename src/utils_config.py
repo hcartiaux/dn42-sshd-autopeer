@@ -105,3 +105,76 @@ protocol bgp flipflap {{
 }}
 """
     return bird
+
+def gen_wireguard_local_config(as_num):
+    """
+    Generate the WireGuard configuration for a peering session (local side).
+
+    Parameters:
+        as_num (str): The AS number.
+
+    Returns:
+        str: The WireGuard configuration as a string.
+    """
+    from src.database_manager import DatabaseManager
+
+    peer_config = DatabaseManager().get_peer_config(as_num)
+    local_config = get_local_config(peer_config['id'])
+
+    wireguard = f"""
+[Interface]
+PrivateKey =
+ListenPort = {local_config["wg_endpoint_port"]}
+PostUp = /sbin/ip addr add dev %i {local_config['link_local']}/128 peer {peer_config['link_local']}/128
+Table = off
+
+[Peer]
+PublicKey = {peer_config['wg_pub_key']}
+Endpoint = {peer_config['wg_endpoint_addr']}:{peer_config['wg_endpoint_port']}
+PersistentKeepalive = 30
+AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
+"""
+    return wireguard
+
+def gen_bird_local_config(as_num):
+    """
+    Generate the BIRD configuration for a peering session (local side)
+
+    Parameters:
+        as_num (str): The AS number.
+
+    Returns:
+        str: The BIRD configuration as a string.
+    """
+
+    from src.utils_network import get_latency,get_latency_bgp_community
+    from src.database_manager import DatabaseManager
+
+    peer_config = DatabaseManager().get_peer_config(as_num)
+    local_config = get_local_config(peer_config['id'])
+
+    latency = get_latency(peer_config['wg_endpoint_addr'])
+    community = get_latency_bgp_community(latency)
+
+    bird = f"""
+define AS{as_num}_LATENCY = {community};
+
+protocol bgp ebgp_as{as_num}_v6 from dnpeers {{
+    neighbor {peer_config['link_local']} as {as_num};
+    interface "wg-as{as_num}";
+
+    ipv4 {{
+        import where dn42_import_filter(AS{as_num}_LATENCY, BANDWIDTH, LINKTYPE);
+        export where dn42_export_filter(AS{as_num}_LATENCY, BANDWIDTH, LINKTYPE);
+        extended next hop on;
+    }};
+
+    ipv6 {{
+        import where dn42_import_filter_v6(AS{as_num}_LATENCY, BANDWIDTH, LINKTYPE);
+        export where dn42_export_filter_v6(AS{as_num}_LATENCY, BANDWIDTH, LINKTYPE);
+        extended next hop off;
+    }};
+}}
+    """
+
+    return bird
