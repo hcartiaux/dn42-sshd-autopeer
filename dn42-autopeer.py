@@ -89,7 +89,7 @@ def main():
 
     elif args.genconfig:
         from src.database_manager import DatabaseManager
-        from src.utils_config import gen_wireguard_local_config, gen_bird_local_config, gen_all_config
+        from src.utils_config import gen_all_config
         asns = DatabaseManager().get_peers_asn()
         gen_all_config(asns)
 
