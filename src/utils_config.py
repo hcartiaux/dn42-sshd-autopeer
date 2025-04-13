@@ -108,6 +108,7 @@ protocol bgp flipflap {{
 """
     return bird
 
+
 def gen_wireguard_local_config(as_num):
     """
     Generate the WireGuard configuration for a peering session (local side).
@@ -138,6 +139,7 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
 """
     return wireguard.strip()
 
+
 def gen_bird_local_config(as_num):
     """
     Generate the BIRD configuration for a peering session (local side)
@@ -149,11 +151,10 @@ def gen_bird_local_config(as_num):
         str: The BIRD configuration as a string.
     """
 
-    from src.utils_network import get_latency,get_latency_bgp_community
+    from src.utils_network import get_latency, get_latency_bgp_community
     from src.database_manager import DatabaseManager
 
     peer_config = DatabaseManager().get_peer_config(as_num)
-    local_config = get_local_config(peer_config['id'])
 
     latency = get_latency(peer_config['wg_endpoint_addr'])
     community = get_latency_bgp_community(latency)
@@ -180,6 +181,7 @@ protocol bgp ebgp_as{as_num}_v6 from dnpeers {{
     """
 
     return bird.strip()
+
 
 def gen_all_config(as_nums):
     """Generates WireGuard and BIRD configurations for a list of AS numbers.
@@ -277,4 +279,3 @@ def gen_all_config(as_nums):
         return False
 
     return True
-
