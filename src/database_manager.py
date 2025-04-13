@@ -108,6 +108,18 @@ class DatabaseManager:
 
         return peer_list
 
+    def get_peers_asn(self):
+        """
+        Retrieve a list of all AS numbers from the peering_links table.
+
+        Returns:
+            list[int]: A list of integers representing the AS numbers of all peers.
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT as_num FROM peering_links;")
+        results = cursor.fetchall()
+        return [row['as_num'] for row in results]
+
     def peer_create(self, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
         """
         Insert a new peer into the database.
