@@ -1,3 +1,5 @@
+from datetime import datetime
+import logging
 import os
 
 # Interrogate peering info and generate bird+wireguard configuration
@@ -134,7 +136,7 @@ Endpoint = {peer_config['wg_endpoint_addr']}:{peer_config['wg_endpoint_port']}
 PersistentKeepalive = 30
 AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
 """
-    return wireguard
+    return wireguard.strip()
 
 def gen_bird_local_config(as_num):
     """
@@ -177,4 +179,102 @@ protocol bgp ebgp_as{as_num}_v6 from dnpeers {{
 }}
     """
 
-    return bird
+    return bird.strip()
+
+def gen_all_config(as_nums):
+    """Generates WireGuard and BIRD configurations for a list of AS numbers.
+
+    It creates versioned directories based on the current timestamp and writes
+    the configuration files for each AS number into these directories. Finally,
+    it updates the 'current' symbolic link in the base directories to point to
+    the newly created version.
+
+    Args:
+        as_nums: A list of autonomous system (AS) numbers to generate
+            configurations for.
+
+    Returns:
+        True if all configurations were generated and links updated
+        successfully, False otherwise.
+    """
+
+    wg_base_dir = os.environ.get("DN42_WG_CONFIG_DIR")
+    bird_base_dir = os.environ.get("DN42_BIRD_CONFIG_DIR")
+
+    if not wg_base_dir or not bird_base_dir:
+        logging.error("Environment variables DN42_WG_CONFIG_DIR and DN42_BIRD_CONFIG_DIR must be set.")
+        return False
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+    # Create WireGuard versioned directory
+    wg_version_dir = os.path.join(wg_base_dir, timestamp)
+    try:
+        os.makedirs(wg_version_dir, exist_ok=True)
+        logging.info(f"Created WireGuard version directory: {wg_version_dir}")
+    except OSError as e:
+        logging.error(f"Error creating WireGuard version directory: {e}")
+        return False
+
+    # Create BIRD versioned directory
+    bird_version_dir = os.path.join(bird_base_dir, timestamp)
+    try:
+        os.makedirs(bird_version_dir, exist_ok=True)
+        logging.info(f"Created BIRD version directory: {bird_version_dir}")
+    except OSError as e:
+        logging.error(f"Error creating BIRD version directory: {e}")
+        return False
+
+    all_configs_written = True
+    for as_num in as_nums:
+        # Generate and write WireGuard config
+        wg_config = gen_wireguard_local_config(as_num)
+        wg_filename = f"wg-as{as_num}"
+        wg_filepath = os.path.join(wg_version_dir, wg_filename)
+        try:
+            with open(wg_filepath, "w") as f:
+                f.write(wg_config)
+            logging.info(f"Written WireGuard config to: {wg_filepath}")
+        except OSError as e:
+            logging.error(f"Error writing WireGuard config for AS{as_num}: {e}")
+            all_configs_written = False
+
+        # Generate and write BIRD config
+        bird_config = gen_bird_local_config(as_num)
+        bird_filename = f"ebgp_as{as_num}"
+        bird_filepath = os.path.join(bird_version_dir, bird_filename)
+        try:
+            with open(bird_filepath, "w") as f:
+                f.write(bird_config)
+            logging.info(f"Written BIRD config to: {bird_filepath}")
+        except OSError as e:
+            logging.error(f"Error writing BIRD config for AS{as_num}: {e}")
+            all_configs_written = False
+
+        if not all_configs_written:
+            return False  # Return early if any config writing fails
+
+    # Update WireGuard 'current' symlink
+    wg_current_dir = os.path.join(wg_base_dir, "current")
+    try:
+        if os.path.islink(wg_current_dir):
+            os.unlink(wg_current_dir)
+        os.symlink(timestamp, wg_current_dir)
+        logging.info(f"Updated 'current' link in {wg_base_dir} to point to: {wg_version_dir}")
+    except OSError as e:
+        logging.exception(f"Error updating WireGuard symlink: {e}")
+        return False
+
+    # Update BIRD 'current' symlink
+    bird_current_dir = os.path.join(bird_base_dir, "current")
+    try:
+        if os.path.islink(bird_current_dir):
+            os.unlink(bird_current_dir)
+        os.symlink(timestamp, bird_current_dir)
+        logging.info(f"Updated 'current' link in {bird_base_dir} to point to: {bird_version_dir}")
+    except OSError as e:
+        logging.exception(f"Error updating BIRD symlink: {e}")
+        return False
+
+    return True
+

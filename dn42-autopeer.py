@@ -87,12 +87,11 @@ def main():
         # If no address/port specified, it defaults to 127.0.0.1:22
         server.start(os.environ['DN42_SSH_LISTEN_ADDRESS'], int(os.environ['DN42_SSH_PORT']))
 
-#    elif args.genconfig:
-#        from src.utils_config import gen_wireguard_local_config, gen_bird_local_config
-#
-#        print(gen_wireguard_local_config('4242420263'))
-#        print(gen_bird_local_config('4242420263'))
-
+    elif args.genconfig:
+        from src.database_manager import DatabaseManager
+        from src.utils_config import gen_wireguard_local_config, gen_bird_local_config, gen_all_config
+        asns = DatabaseManager().get_peers_asn()
+        gen_all_config(asns)
 
 
 if __name__ == '__main__':
