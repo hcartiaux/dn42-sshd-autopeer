@@ -34,12 +34,15 @@ def peer_status(as_num):
     Returns:
         str: The status output of the peer.
     """
+    systemctl_cmd = f"systemctl list-timers dn42-genconfig"
+    systemctl_output = os.popen(f"{systemctl_cmd}").read()
     wg_cmd = f"wg show wg-as{as_num}"
     wg_output = os.popen(f"sudo {wg_cmd}").read()
     birdc_cmd = f"birdc show protocols all ebgp_as{as_num}_v6"
     birdc_output = os.popen(f"sudo {birdc_cmd}").read()
-    return "$ " + wg_cmd + "\n" + wg_output + \
-        "\n$ " + birdc_cmd + "\n" + birdc_output
+    return "$ " + systemctl_cmd + "\n" + systemctl_output + \
+         "\n$ " + wg_cmd + "\n" + wg_output + \
+         "\n$ " + birdc_cmd + "\n" + birdc_output
 
 # Gen config
 
