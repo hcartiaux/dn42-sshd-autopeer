@@ -23,6 +23,7 @@ def main():
                                                       os.path.join(top_directory, 'files/registry'))
     os.environ['DN42_ASN'] = os.getenv('DN42_ASN', '4242420263')
     os.environ['DN42_WG_PUB_KEY'] = os.getenv('DN42_WG_PUB_KEY', 'rj0SORruOE/hGVJ5IkDXNedsL9Nxs8j0kTujRB01XXk=')
+    os.environ['DN42_WG_PRIV_KEY'] = os.getenv('DN42_WG_PRIV_KEY', '**REPLACEME**')
     os.environ['DN42_WG_LINK_LOCAL'] = os.getenv('DN42_WG_LINK_LOCAL', 'fe80:0263::')
     os.environ['DN42_WG_BASE_PORT'] = os.getenv('DN42_WG_BASE_PORT', '52000')
     os.environ['DN42_RESERVED_NETWORK'] = os.getenv('DN42_RESERVED_NETWORK', '')
