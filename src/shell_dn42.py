@@ -491,4 +491,4 @@ class ShellDn42(Cmd):
                 return
 
         cmd_output = peer_status(as_num)
-        self.rich_print(Markdown("```" + cmd_output + "```"))
+        self.rich_print(Markdown("````\n" + cmd_output))

@@ -40,8 +40,11 @@ def peer_status(as_num):
     wg_output = os.popen(f"sudo {wg_cmd}").read()
     birdc_cmd = f"birdc show protocols all ebgp_as{as_num}_v6"
     birdc_output = os.popen(f"sudo {birdc_cmd}").read()
-    return "$ " + systemctl_cmd + "\n" + systemctl_output + \
+    return "$ # Configuration generator timer" \
+         "\n$ " + systemctl_cmd + "\n" + systemctl_output + \
+         "\n$ # Wireguard interface" \
          "\n$ " + wg_cmd + "\n" + wg_output + \
+         "\n$ # Bird BGP session" \
          "\n$ " + birdc_cmd + "\n" + birdc_output
 
 # Gen config
