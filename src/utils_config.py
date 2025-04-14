@@ -231,7 +231,7 @@ def gen_all_config(as_nums):
     for as_num in as_nums:
         # Generate and write WireGuard config
         wg_config = gen_wireguard_local_config(as_num)
-        wg_filename = f"wg-as{as_num}"
+        wg_filename = f"wg-as{as_num}.conf"
         wg_filepath = os.path.join(wg_version_dir, wg_filename)
         try:
             with open(wg_filepath, "w") as f:
