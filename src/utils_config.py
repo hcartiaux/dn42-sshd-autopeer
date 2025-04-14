@@ -126,7 +126,7 @@ def gen_wireguard_local_config(as_num):
 
     wireguard = f"""
 [Interface]
-PrivateKey = {os.environ['DN42_WG_PRIV_KEY']},
+PrivateKey = {os.environ['DN42_WG_PRIV_KEY']}
 ListenPort = {local_config["wg_endpoint_port"]}
 PostUp = /sbin/ip addr add dev %i {local_config['link_local']}/128 peer {peer_config['link_local']}/128
 Table = off
