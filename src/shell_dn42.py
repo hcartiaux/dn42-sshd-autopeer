@@ -346,8 +346,9 @@ class ShellDn42(Cmd):
             return
 
         if self.db_manager.peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
-            self.rich_print(f'[green]The peering session has been created for AS{as_num}')
-            self.rich_print('[green] :information: Display the configuration information with the command [italic]peer_config[/italic]')
+            self.rich_print(f'[green]The peering session has been registered for AS{as_num}')
+            self.rich_print('[green] :information: Peering sessions are created every 5 minutes')
+            self.rich_print('[green] :information: Display the system configuration with the command [italic]peer_config[/italic]')
         else:
             self.rich_print(f'[red] :exclamation: The peering session could not be created for AS{as_num}')
 
