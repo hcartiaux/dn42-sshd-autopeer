@@ -6,6 +6,7 @@ from re import match
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
+from rich.markdown import Markdown
 from src.database_manager import DatabaseManager
 from src.utils_dn42 import *
 from src.utils_config import *
@@ -402,17 +403,14 @@ class ShellDn42(Cmd):
         self.rich_print(table_local)
 
         # WireGuard configuration table
-        table_wg = Table(style='blue')
-        table_wg.add_column(f"Wireguard configuration for AS{as_num}", no_wrap=True)
-        table_wg.add_row(Text(gen_wireguard_peer_config(as_id,
-                         peer_config['wg_endpoint_port'], peer_config['link_local'])))
-        self.rich_print(table_wg)
+        wg_config = f"**Wireguard configuration for AS{as_num}**\n"
+        wg_config += "```" + gen_wireguard_peer_config(as_id, peer_config['wg_endpoint_port'], peer_config['link_local']) + "```"
+        self.rich_print(Markdown(wg_config))
 
         # Bird configuration table
-        table_bird = Table(style='blue')
-        table_bird.add_column(f"Bird configuration for AS{as_num}", no_wrap=True)
-        table_bird.add_row(Text(gen_bird_peer_config(as_num, as_id)))
-        self.rich_print(table_bird)
+        bird_config = f"  **Bird configuration for AS{as_num}**\n"
+        bird_config += "```" + gen_bird_peer_config(as_num, as_id) + "```"
+        self.rich_print(Markdown(bird_config))
 
     def do_peer_list(self, arg):
         """
@@ -493,9 +491,4 @@ class ShellDn42(Cmd):
                 return
 
         cmd_output = peer_status(as_num)
-        table = Table(style="yellow")
-        table.add_column(
-            f"Peering session status on {self.server}",
-            no_wrap=False)
-        table.add_row(Text(cmd_output))
-        self.rich_print(table)
+        self.rich_print(Markdown("```" + cmd_output + "```"))
