@@ -89,7 +89,7 @@ def gen_bird_peer_config(as_num, as_id):
 
     bird = f"""
 protocol bgp flipflap {{
-    local as {as_num}
+    local as {as_num};
     neighbor {local_config["link_local"]} as {os.environ["DN42_ASN"]};
     path metric 1;
     interface "wg-peer-flipflap";
