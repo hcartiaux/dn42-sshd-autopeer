@@ -402,10 +402,14 @@ class ShellDn42(Cmd):
         table_local.add_row('Link-local address', Text(local_config['link_local']))
         self.rich_print(table_local)
 
+        self.emptyline()
+
         # WireGuard configuration table
         wg_config = f"**Wireguard configuration for AS{as_num}**\n"
         wg_config += "```" + gen_wireguard_peer_config(as_id, peer_config['wg_endpoint_port'], peer_config['link_local']) + "```"
         self.rich_print(Markdown(wg_config))
+
+        self.emptyline()
 
         # Bird configuration table
         bird_config = f"  **Bird configuration for AS{as_num}**\n"
