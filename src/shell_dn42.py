@@ -406,14 +406,14 @@ class ShellDn42(Cmd):
 
         # WireGuard configuration table
         wg_config = f"**Wireguard configuration for AS{as_num}**\n"
-        wg_config += "```" + gen_wireguard_peer_config(as_id, peer_config['wg_endpoint_port'], peer_config['link_local']) + "```"
+        wg_config += "```INI" + gen_wireguard_peer_config(as_id, peer_config['wg_endpoint_port'], peer_config['link_local']) + "```"
         self.rich_print(Markdown(wg_config))
 
         self.emptyline()
 
         # Bird configuration table
         bird_config = f"  **Bird configuration for AS{as_num}**\n"
-        bird_config += "```" + gen_bird_peer_config(as_num, as_id) + "```"
+        bird_config += "```unixconfig" + gen_bird_peer_config(as_num, as_id) + "```"
         self.rich_print(Markdown(bird_config))
 
     def do_peer_list(self, arg):
