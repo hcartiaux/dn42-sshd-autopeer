@@ -98,7 +98,7 @@ class SSHServerBase(ABC):
                 except paramiko.SSHException:
                     logging.exception("[SSHServerBase] SSHException in _listen()")
                     continue
-                except:
+                except BaseException:
                     logging.exception("[SSHServerBase] Unmanaged exception")
                     continue
 
