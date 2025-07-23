@@ -20,10 +20,10 @@ def load_authorized_keys(user):
     try:
         with open(os.environ['DN42_REGISTRY_DIRECTORY'] + "/data/mntner/" + user.upper() + "-MNT", 'r') as file:
             for line in file:
-                l = line.strip().split()
-                if len(l) >= 3 and l[0] == 'auth:':
-                    key_type = l[1]
-                    key_data = l[2]
+                split_line = line.strip().split()
+                if len(split_line) >= 3 and split_line[0] == 'auth:':
+                    key_type = split_line[1]
+                    key_data = split_line[2]
                     if key_type == 'ssh-ed25519':
                         key = paramiko.Ed25519Key(data=base64.b64decode(key_data))
                     elif key_type == 'ssh-rsa':
@@ -54,8 +54,8 @@ def as_maintained_by(user):
         try:
             with open(filepath, "r") as file:
                 for line in file:
-                    l = line.strip().split()
-                    if len(l) == 2 and l[0] == 'mnt-by:' and l[1] == user.upper() + "-MNT":
+                    split_line = split_line.strip().split()
+                    if len(split_line) == 2 and split_line[0] == 'mnt-by:' and split_line[1] == user.upper() + "-MNT":
                         as_nums.append(filename[2:])
         except BaseException:
             pass
