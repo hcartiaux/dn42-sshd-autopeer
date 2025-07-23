@@ -54,7 +54,7 @@ def as_maintained_by(user):
         try:
             with open(filepath, "r") as file:
                 for line in file:
-                    split_line = split_line.strip().split()
+                    split_line = line.strip().split()
                     if len(split_line) == 2 and split_line[0] == 'mnt-by:' and split_line[1] == user.upper() + "-MNT":
                         as_nums.append(filename[2:])
         except BaseException:
