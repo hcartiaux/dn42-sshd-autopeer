@@ -72,6 +72,7 @@ def validate_ipv6(ip, forbidden_networks=[]):
     except BaseException:
         return False
 
+
 def get_latency(host):
     """
     Measure the average latency to a host using ping.
@@ -102,6 +103,7 @@ def get_latency(host):
         return float(match.group(1))
     else:
         return None
+
 
 def get_latency_bgp_community(lat):
     """
