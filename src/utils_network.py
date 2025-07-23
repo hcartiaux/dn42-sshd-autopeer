@@ -117,7 +117,7 @@ def get_latency_bgp_community(lat):
     Returns:
         int: Community number between 1 and 9
     """
-    if lat == None:
+    if lat is None:
         return 9
     if lat <= 2.7:
         return 1
