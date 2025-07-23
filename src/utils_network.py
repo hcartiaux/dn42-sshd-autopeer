@@ -89,8 +89,8 @@ def get_latency(host):
 
     ping = subprocess.Popen(
         ["ping", "-c", "4", host],
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
     out, error = ping.communicate()
 
