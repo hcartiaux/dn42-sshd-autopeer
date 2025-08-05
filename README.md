@@ -60,7 +60,7 @@ These environment variables can be set to configure the service
 | `DN42_REGISTRY_DIRECTORY` | Path to dn42 registry clone                               | `files/registry`                  |
 | `DN42_ASN`                | Your dn42 Autonomous System Number                        | `4242420263`                      |
 | `DN42_WG_PUB_KEY`         | WireGuard public key for tunnels                          | `rj0SORruOE/hGV...`               |
-| `DN42_WG_PRIV_KEY`        | WireGuard private key used in `--genconfig`               | `**REPLACEME**    `               |
+| `DN42_WG_PRIV_KEY`        | WireGuard private key used in `--genconfig`               | `**REPLACEME**`                   |
 | `DN42_WG_LINK_LOCAL`      | IPv6 link-local base address (without last 4 bytes)       | `fe80:0263::`                     |
 | `DN42_WG_BASE_PORT`       | Base WireGuard port                                       | `52000`                           |
 | `DN42_RESERVED_NETWORK`   | Network where peering is restricted                       | None                              |
