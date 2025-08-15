@@ -6,8 +6,9 @@ to automatically establish and manage peering connections with AS4242420263.
 ## Overview
 
 This project implements a custom SSH server using [Paramiko](https://github.com/paramiko/paramiko/)
-that authenticates users against the dn42 registry. It allows network operators to request peering
-sessions without manual intervention, storing all peering information in a SQLite database.
+that authenticates users against the dn42 registry. It allows network operators
+to request peering sessions without manual intervention, storing all peering
+information in a SQLite database.
 
 ## Quick Start
 
@@ -33,7 +34,7 @@ $ python dn42-autopeer.py --server
 ### Usage
 
 ```
-python dn42-autopeer.py --help                                                                                                                                (↑✗main)
+python dn42-autopeer.py --help
 usage: dn42-sshd [-h] (--server | --genconfig | --gaming)
 
 options:
@@ -123,6 +124,7 @@ It can be enabled and started using the `systemctl` command:
 
 ```
 $ systemctl enable --now dn42-sshd
+Created symlink /etc/systemd/system/multi-user.target.wants/dn42-sshd.service → /etc/systemd/system/dn42-sshd.service
 ```
 
 The logs are readable using the `journalctl` command:
