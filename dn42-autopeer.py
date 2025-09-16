@@ -58,9 +58,8 @@ def main():
         from src.ssh_server_shell import SSHServerShell
         from src.ssh_server_auth_dn42 import SSHServerAuthDn42
 
-        # Set the Message of the Day (MOTD) path for the peering server
-        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
-            'DN42_SSH_MOTD_PATH', os.path.join(top_directory, 'files/motd', os.environ['DN42_SERVER']))
+        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv('DN42_SSH_MOTD_PATH',
+                                                      os.path.join(top_directory, 'files/motd/motd_peering_service'))
 
         # Create SSH server with ShellDn42 and DN42 authentication
         server = SSHServerShell(SSHServerAuthDn42, ShellDn42, host_key_file)
@@ -74,9 +73,9 @@ def main():
         from src.ssh_server_pipe import SSHServerPipe
         from src.ssh_server_auth_none import SSHServerAuthNone
 
-        # Set the MOTD path for the gaming server
-        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv(
-            'DN42_SSH_MOTD_PATH', os.path.join(top_directory, 'files/motd/motd_gaming_service'))
+        os.environ['DN42_SSH_MOTD_PATH'] = os.getenv('DN42_SSH_MOTD_PATH',
+                                                      os.path.join(top_directory, 'files/motd/motd_gaming_service'))
+
 
         # Specify the command to run (in this case, 'advent')
         cmd = 'advent'
