@@ -11,7 +11,7 @@ from rich.markdown import Markdown
 from src.database_manager import DatabaseManager
 from src.utils_dn42 import as_maintained_by
 from src.utils_config import get_local_config, gen_wireguard_peer_config, gen_bird_peer_config, peer_status
-from src.utils_network import get_ipv6, validate_ipv6
+from src.utils_network import get_ipv6, validate_ipv6, validate_link_local_ipv6
 
 
 class ShellDn42(Cmd):
@@ -322,12 +322,12 @@ class ShellDn42(Cmd):
             self.rich_print('[green] :information: List your peering sessions with [italic]peer_list[/italic], remove with [italic]peer_remove[/italic]')
             return
 
-        wg_pub_key       = self.rich_prompt("[bold blue]Wireguard public key      :[/] ")
+        wg_pub_key       = self.rich_prompt("[bold blue]WireGuard public key      :[/] ")
         if not match('^[0-9a-zA-Z+/]{43}=$', wg_pub_key):
             self.rich_print('[red] :exclamation: Malformed WireGuard public key (^[0-9a-zA-Z+/]{43}=$)')
             return
 
-        wg_endpoint_addr = self.rich_prompt("[bold blue]Wireguard endpoint address:[/] ")
+        wg_endpoint_addr = self.rich_prompt("[bold blue]WireGuard endpoint address:[/] ")
         ipv6_list = get_ipv6(wg_endpoint_addr)
         if not ipv6_list:
             self.rich_print('[red] :exclamation: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
@@ -339,7 +339,7 @@ class ShellDn42(Cmd):
                 self.rich_print(f'[red] :exclamation: The endpoint address {ipv6} is forbidden')
                 return
 
-        wg_endpoint_port = self.rich_prompt("[bold blue]Wireguard endpoint port   :[/] ")
+        wg_endpoint_port = self.rich_prompt("[bold blue]WireGuard endpoint port   :[/] ")
         if not match('^[0-9]+$', wg_endpoint_port):
             self.rich_print('[red] :exclamation: Malformed port number (^[0-9]+$)')
             return
@@ -347,7 +347,20 @@ class ShellDn42(Cmd):
             self.rich_print('[red] :exclamation: Malformed port number ([1;65535])')
             return
 
-        if self.db_manager.peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
+        user_link_local = None
+        self.rich_print("[yellow]Optional: Provide your own link-local IPv6 address (fe80::/10 range)")
+        self.rich_print("[yellow]Leave empty to use automatically generated address")
+        user_input = self.rich_prompt("[bold blue]Link-local IPv6 (optional):[/] ")
+
+        if user_input.strip():
+            if not validate_link_local_ipv6(user_input.strip()):
+                local_link_local = os.environ.get('DN42_WG_LOCAL_ADDRESS', 'fe80::263')
+                self.rich_print(f'[red] :exclamation: Invalid link-local IPv6 address. Must be in fe80::/10 range and different from local address ({local_link_local})')
+                return
+            user_link_local = user_input.strip()
+
+        if self.db_manager.peer_create(as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port, user_link_local):
+            self.emptyline()
             self.rich_print(f'[green]The peering session has been registered for AS{as_num}')
             self.rich_print('[green] :information: Peering sessions are created every 5 minutes')
             self.rich_print('[green] :information: Display the system configuration with the command [italic]peer_config[/italic]')
@@ -385,36 +398,36 @@ class ShellDn42(Cmd):
         table_remote = Table(style='blue')
         table_remote.add_column("Link config.", no_wrap=True)
         table_remote.add_column(f"AS{as_num}", no_wrap=True)
-        table_remote.add_row('Wg pub key', peer_config['wg_pub_key'])
-        table_remote.add_row('Wg Endpoint addr.', Text(peer_config['wg_endpoint_addr']))
-        table_remote.add_row('Wg Endpoint port', peer_config['wg_endpoint_port'])
-        table_remote.add_row('Link-local address', Text(peer_config['link_local']))
+        table_remote.add_row('WG pub key', peer_config['wg_pub_key'])
+        table_remote.add_row('WG Endpoint addr.', Text(peer_config['wg_endpoint_addr']))
+        table_remote.add_row('WG Endpoint port', peer_config['wg_endpoint_port'])
+        table_remote.add_row('Link-local address', Text(peer_config['ll_address']))
         self.rich_print(table_remote)
 
         # Local configuration table
-        as_id = self.db_manager.get_asn_id(as_num)
-        local_config = get_local_config(as_id)
+        as_id = peer_config['id']
+        local_config = get_local_config(as_id, peer_config['ll_address'])
         table_local = Table(style='yellow')
         table_local.add_column("Link config.", no_wrap=True)
         table_local.add_column(f"AS{self.asn}", no_wrap=True)
-        table_local.add_row('Wg pub key', local_config['wg_pub_key'])
-        table_local.add_row('Wg Endpoint addr.', Text(local_config['wg_endpoint_addr']))
-        table_local.add_row('Wg Endpoint port', local_config['wg_endpoint_port'])
-        table_local.add_row('Link-local address', Text(local_config['link_local']))
+        table_local.add_row('WG pub key', local_config['wg_pub_key'])
+        table_local.add_row('WG Endpoint addr.', Text(local_config['wg_endpoint_addr']))
+        table_local.add_row('WG Endpoint port', local_config['wg_endpoint_port'])
+        table_local.add_row('Link-local address', Text(local_config['ll_address']))
         self.rich_print(table_local)
 
         self.emptyline()
 
         # WireGuard configuration table
-        wg_config = f"**Wireguard configuration for AS{as_num}**\n"
-        wg_config += "```INI" + gen_wireguard_peer_config(as_id, peer_config['wg_endpoint_port'], peer_config['link_local']) + "```"
+        wg_config = f"**WireGuard configuration for AS{as_num}**\n"
+        wg_config += "```INI" + gen_wireguard_peer_config(as_num) + "```"
         self.rich_print(Markdown(wg_config))
 
         self.emptyline()
 
         # Bird configuration table
         bird_config = f"  **Bird configuration for AS{as_num}**\n"
-        bird_config += "```unixconfig" + gen_bird_peer_config(as_num, as_id) + "```"
+        bird_config += "```unixconfig" + gen_bird_peer_config(as_num) + "```"
         self.rich_print(Markdown(bird_config))
 
     def do_peer_list(self, arg):
@@ -427,16 +440,17 @@ class ShellDn42(Cmd):
         """
         self.emptyline()
         table = Table(title="Your existing peering sessions", style="blue")
-        table.add_column("AS number", no_wrap=True)
-        table.add_column("Wireguard public key")
-        table.add_column("Endpoint address", no_wrap=True)
-        table.add_column("Endpoint port", no_wrap=True)
+        table.add_column("AS Number", no_wrap=True)
+        table.add_column("WireGuard Public Key")
+        table.add_column("Endpoint Address", no_wrap=True)
+        table.add_column("Port", no_wrap=True)
         for as_num, peer_info in self.db_manager.get_peer_list(self.username).items():
             table.add_row(
                 as_num,
                 peer_info['wg_pub_key'],
                 Text(peer_info['wg_endpoint_addr']),
-                peer_info['wg_endpoint_port'])
+                peer_info['wg_endpoint_port']
+            )
         self.rich_print(table)
 
     def do_peer_remove(self, arg):

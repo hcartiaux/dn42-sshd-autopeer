@@ -137,3 +137,40 @@ def get_latency_bgp_community(lat):
         return 8
     else:
         return 9
+
+
+def validate_link_local_ipv6(ip):
+    """
+    Validate that an IPv6 address is a proper link-local address and doesn't conflict with local addresses.
+
+    Link-local addresses must be in the fe80::/10 range and must not be the same as the local system's
+    link-local address.
+
+    Parameters:
+        ip (str): The IPv6 address to validate.
+
+    Returns:
+        bool: True if the IP is a valid and non-conflicting link-local address, False otherwise.
+    """
+    try:
+        import ipaddress
+        import os
+
+        # Parse the IPv6 address
+        ip_obj = ipaddress.IPv6Address(ip)
+
+        # Check if it's in the link-local range (fe80::/10)
+        link_local_network = ipaddress.IPv6Network('fe80::/10')
+        if ip_obj not in link_local_network:
+            return False
+
+        # Check if it conflicts with the local link-local address
+        local_link_local = os.environ.get('DN42_WG_LOCAL_ADDRESS')
+        local_ip_obj = ipaddress.IPv6Address(local_link_local)
+        if ip_obj == local_ip_obj:
+            return False
+
+        return True
+
+    except BaseException:
+        return False
