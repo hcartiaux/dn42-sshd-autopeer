@@ -39,7 +39,8 @@ class DatabaseManager:
                 as_num INTEGER UNIQUE NOT NULL,
                 wg_pub_key TEXT NOT NULL,
                 wg_endpoint_addr TEXT NOT NULL,
-                wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535)
+                wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535),
+                user_link_local TEXT
             )
             """)
 
@@ -50,20 +51,6 @@ class DatabaseManager:
         if self.connection:
             self.connection.close()
             self.connection = None
-
-    def get_asn_id(self, as_num):
-        """
-        Retrieve the ID associated with a given AS number.
-
-        Parameters:
-            as_num (int): The AS number for which to retrieve the ID.
-
-        Returns:
-            int or None: The ID associated with the AS number, or None if not found.
-        """
-        cursor = self.connection.execute("SELECT id FROM peering_links WHERE as_num = ?", (as_num,))
-        row = cursor.fetchone()
-        return row['id'] if row else None
 
     def get_peer_config(self, as_num):
         """
@@ -78,12 +65,18 @@ class DatabaseManager:
         cursor = self.connection.execute("SELECT * FROM peering_links WHERE as_num = ?", (as_num,))
         row = cursor.fetchone()
         if row:
+            # Use user's link-local if provided, otherwise use calculated one
+            if row["user_link_local"]:
+                peer_address = row["user_link_local"]
+            else:
+                peer_address = f"{os.environ['DN42_WG_LINK_LOCAL_PREFIX']}2:{hex(row['id'])[2:]}"
+
             return {
                 "id": row["id"],
                 "wg_pub_key": row["wg_pub_key"],
                 "wg_endpoint_addr": row["wg_endpoint_addr"],
                 "wg_endpoint_port": str(row["wg_endpoint_port"]),
-                "link_local": f"{os.environ['DN42_WG_LINK_LOCAL']}2:{hex(row['id'])[2:]}"
+                "ll_address": peer_address,
             }
         else:
             return None
@@ -120,7 +113,7 @@ class DatabaseManager:
         results = cursor.fetchall()
         return [row['as_num'] for row in results]
 
-    def peer_create(self, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port):
+    def peer_create(self, as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port, user_link_local=None):
         """
         Insert a new peer into the database.
 
@@ -129,6 +122,7 @@ class DatabaseManager:
             wg_pub_key (str): The WireGuard public key of the peer.
             wg_endpoint_addr (str): The WireGuard endpoint address of the peer.
             wg_endpoint_port (int): The WireGuard endpoint port of the peer.
+            user_link_local (str, optional): The user's custom link-local address.
 
         Returns:
             bool: True if the peer was successfully inserted, False otherwise.
@@ -172,16 +166,16 @@ class DatabaseManager:
         )
         INSERT INTO peering_links (
                                     id,
-                                    as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port
+                                    as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port, user_link_local
                                   )
         VALUES (
                 (SELECT id FROM unused_id),
-                ?, ?, ?, ?
+                ?, ?, ?, ?, ?
                );
         """
         try:
             self.connection.execute('BEGIN TRANSACTION')
-            self.connection.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port))
+            self.connection.execute(query, (as_num, wg_pub_key, wg_endpoint_addr, wg_endpoint_port, user_link_local))
             self.connection.execute('COMMIT')
         except sqlite3.IntegrityError:
             self.connection.execute('ROLLBACK')

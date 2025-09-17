@@ -50,23 +50,24 @@ options:
 
 These environment variables can be set to configure the service
 
-| Variable                  | Description                                               | Default                           |
-|---------------------------|-----------------------------------------------------------|-----------------------------------|
-| `DN42_SSH_HOST_KEY`       | Path to SSH host key file                                 | `files/ssh-keys/ssh_host_rsa_key` |
-| `DN42_SSH_LISTEN_ADDRESS` | Listen address                                            | `::1`                             |
-| `DN42_SSH_PORT`           | SSH port                                                  | `4242`                            |
-| `DN42_SERVER`             | Public domain name of the server                          | `nl-ams2.flap42.eu`               |
-| `DN42_SSH_MOTD_PATH`      | Path to custom MOTD file                                  | `files/motd/$DN42_SERVER`         |
-| `DN42_DB_PATH`            | Path to SQLite database file                              | `files/db/$DN42_SERVER`           |
-| `DN42_REGISTRY_DIRECTORY` | Path to dn42 registry clone                               | `files/registry`                  |
-| `DN42_ASN`                | Your dn42 Autonomous System Number                        | `4242420263`                      |
-| `DN42_WG_PUB_KEY`         | WireGuard public key for tunnels                          | `rj0SORruOE/hGV...`               |
-| `DN42_WG_PRIV_KEY`        | WireGuard private key used in `--genconfig`               | `**REPLACEME**`                   |
-| `DN42_WG_LINK_LOCAL`      | IPv6 link-local base address (without last 4 bytes)       | `fe80:0263::`                     |
-| `DN42_WG_BASE_PORT`       | Base WireGuard port                                       | `52000`                           |
-| `DN42_RESERVED_NETWORK`   | Network where peering is restricted                       | None                              |
-| `DN42_BIRD_CONFIG_DIR`    | Place to generate the bird config files in  `--genconfig` | `files/bird`                      |
-| `DN42_WG_CONFIG_DIR`      | Place to generate the wg config files in  `--genconfig`   | `files/wireguard`                 |
+| Variable                    | Description                                               | Default                           |
+|-----------------------------|-----------------------------------------------------------|-----------------------------------|
+| `DN42_SSH_HOST_KEY`         | Path to SSH host key file                                 | `files/ssh-keys/ssh_host_rsa_key` |
+| `DN42_SSH_LISTEN_ADDRESS`   | Listen address                                            | `::1`                             |
+| `DN42_SSH_PORT`             | SSH port                                                  | `4242`                            |
+| `DN42_SERVER`               | Public domain name of the server                          | `nl-ams2.flap42.eu`               |
+| `DN42_SSH_MOTD_PATH`        | Path to custom MOTD file                                  | `files/motd/$DN42_SERVER`         |
+| `DN42_DB_PATH`              | Path to SQLite database file                              | `files/db/$DN42_SERVER`           |
+| `DN42_REGISTRY_DIRECTORY`   | Path to dn42 registry clone                               | `files/registry`                  |
+| `DN42_ASN`                  | Your dn42 Autonomous System Number                        | `4242420263`                      |
+| `DN42_WG_PUB_KEY`           | WireGuard public key for tunnels                          | `rj0SORruOE/hGV...`               |
+| `DN42_WG_PRIV_KEY`          | WireGuard private key used in `--genconfig`               | `**REPLACEME**`                   |
+| `DN42_WG_LINK_LOCAL_PREFIX` | IPv6 link-local prefix for auto-generated addresses       | `fe80:0263::`                     |
+| `DN42_WG_LOCAL_ADDRESS`     | Local system's link-local address                         | `fe80::263`                       |
+| `DN42_WG_BASE_PORT`         | Base WireGuard port                                       | `52000`                           |
+| `DN42_RESERVED_NETWORK`     | Network where peering is restricted                       | None                              |
+| `DN42_BIRD_CONFIG_DIR`      | Place to generate the bird config files in  `--genconfig` | `files/bird`                      |
+| `DN42_WG_CONFIG_DIR`        | Place to generate the wg config files in  `--genconfig`   | `files/wireguard`                 |
 
 ## Installation
 
@@ -96,7 +97,8 @@ Environment="DN42_DB_PATH=/home/dn42-sshd/peering.db"
 Environment="DN42_REGISTRY_DIRECTORY=/home/dn42-sshd/dn42-registry"
 Environment="DN42_ASN=4242420263"
 Environment="DN42_WG_PUB_KEY=C3Wlu6y+v84FN/vreuTqL6r5wEtGTMXX5rKgHkxDaTI="
-Environment="DN42_WG_LINK_LOCAL=fe80:0263::"
+Environment="DN42_WG_LINK_LOCAL_PREFIX=fe80:0263::"
+Environment="DN42_WG_LOCAL_ADDRESS=fe80::263"
 Environment="DN42_WG_BASE_PORT=52000"
 Environment="DN42_RESERVED_NETWORK=2001:0bc8:3feb::/48"
 

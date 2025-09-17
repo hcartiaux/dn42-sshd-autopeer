@@ -5,7 +5,7 @@ import os
 # Interrogate peering info and generate bird+wireguard configuration
 
 
-def get_local_config(as_id):
+def get_local_config(as_id, peer_address):
     """
     Retrieve the local configuration for a given AS ID.
 
@@ -19,8 +19,13 @@ def get_local_config(as_id):
         "wg_pub_key": os.environ['DN42_WG_PUB_KEY'],
         "wg_endpoint_addr": os.environ['DN42_SERVER'],
         "wg_endpoint_port": str(int(os.environ['DN42_WG_BASE_PORT']) + int(as_id)),
-        "link_local": os.environ['DN42_WG_LINK_LOCAL'] + '1:' + hex(int(as_id))[2:]
     }
+
+    if peer_address.startswith(os.environ['DN42_WG_LINK_LOCAL_PREFIX']):
+        local_config["ll_address"] = f"{os.environ['DN42_WG_LINK_LOCAL_PREFIX']}1:{hex(as_id)[2:]}"
+    else:
+        local_config["ll_address"] = os.environ['DN42_WG_LOCAL_ADDRESS']
+
     return local_config
 
 
@@ -50,25 +55,27 @@ def peer_status(as_num):
 # Gen config
 
 
-def gen_wireguard_peer_config(as_id, wg_endpoint_port, link_local):
+def gen_wireguard_peer_config(as_num):
     """
     Generate the WireGuard configuration for a peering session (remote side).
 
     Parameters:
-        as_id (str): The AS ID.
-        wg_endpoint_port (str): The WireGuard endpoint port.
-        link_local (str): The link-local address.
+        as_num (str): The AS number.
 
     Returns:
         str: The WireGuard configuration as a string.
     """
-    local_config = get_local_config(as_id)
+    from src.database_manager import DatabaseManager
+
+    db_manager = DatabaseManager()
+    peer_config = db_manager.get_peer_config(as_num)
+    local_config = get_local_config(peer_config['id'], peer_config['ll_address'])
 
     wireguard = f"""
 [Interface]
 PrivateKey = **REPLACEME**
-ListenPort = {wg_endpoint_port}
-PostUp = /sbin/ip addr add dev %i {link_local}/128 peer {local_config["link_local"]}/128
+ListenPort = {peer_config['wg_endpoint_port']}
+PostUp = /sbin/ip addr add dev %i {peer_config['ll_address']}/128 peer {local_config['ll_address']}/128
 Table = off
 
 [Peer]
@@ -80,23 +87,26 @@ AllowedIPs = 172.16.0.0/12, 10.0.0.0/8, fd00::/8, fe80::/10
     return wireguard
 
 
-def gen_bird_peer_config(as_num, as_id):
+def gen_bird_peer_config(as_num):
     """
     Generate the BIRD configuration for a peering session (remote side)
 
     Parameters:
         as_num (str): The AS number.
-        as_id (str): The AS ID.
 
     Returns:
         str: The BIRD configuration as a string.
     """
-    local_config = get_local_config(as_id)
+    from src.database_manager import DatabaseManager
+
+    db_manager = DatabaseManager()
+    peer_config = db_manager.get_peer_config(as_num)
+    local_config = get_local_config(peer_config['id'], peer_config['ll_address'])
 
     bird = f"""
 protocol bgp flipflap {{
     local as {as_num};
-    neighbor {local_config["link_local"]} as {os.environ["DN42_ASN"]};
+    neighbor {local_config['ll_address']} as {os.environ["DN42_ASN"]};
     path metric 1;
     interface "wg-peer-flipflap";
     ipv4 {{
@@ -127,14 +137,15 @@ def gen_wireguard_local_config(as_num):
     """
     from src.database_manager import DatabaseManager
 
-    peer_config = DatabaseManager().get_peer_config(as_num)
-    local_config = get_local_config(peer_config['id'])
+    db_manager = DatabaseManager()
+    peer_config = db_manager.get_peer_config(as_num)
+    local_config = get_local_config(peer_config['id'], peer_config['ll_address'])
 
     wireguard = f"""
 [Interface]
 PrivateKey = {os.environ['DN42_WG_PRIV_KEY']}
 ListenPort = {local_config["wg_endpoint_port"]}
-PostUp = /sbin/ip addr add dev %i {local_config['link_local']}/128 peer {peer_config['link_local']}/128
+PostUp = /sbin/ip addr add dev %i {local_config['ll_address']}/128 peer {peer_config['ll_address']}/128
 Table = off
 
 [Peer]
@@ -160,7 +171,8 @@ def gen_bird_local_config(as_num):
     from src.utils_network import get_latency, get_latency_bgp_community
     from src.database_manager import DatabaseManager
 
-    peer_config = DatabaseManager().get_peer_config(as_num)
+    db_manager = DatabaseManager()
+    peer_config = db_manager.get_peer_config(as_num)
 
     latency = get_latency(peer_config['wg_endpoint_addr'])
     community = get_latency_bgp_community(latency)
@@ -169,7 +181,7 @@ def gen_bird_local_config(as_num):
 define AS{as_num}_LATENCY = {community};
 
 protocol bgp ebgp_as{as_num}_v6 from dnpeers {{
-    neighbor {peer_config['link_local']} as {as_num};
+    neighbor {peer_config['ll_address']} as {as_num};
     interface "wg-as{as_num}";
 
     ipv4 {{
