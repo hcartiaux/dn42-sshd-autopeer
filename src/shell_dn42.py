@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 from cmd import Cmd
 from io import StringIO
@@ -8,9 +9,9 @@ from rich.table import Table
 from rich.text import Text
 from rich.markdown import Markdown
 from src.database_manager import DatabaseManager
-from src.utils_dn42 import *
-from src.utils_config import *
-from src.utils_network import *
+from src.utils_dn42 import as_maintained_by
+from src.utils_config import get_local_config, gen_wireguard_peer_config, gen_bird_peer_config, peer_status
+from src.utils_network import get_ipv6, validate_ipv6
 
 
 class ShellDn42(Cmd):
