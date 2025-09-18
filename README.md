@@ -192,7 +192,8 @@ CREATE TABLE IF NOT EXISTS peering_links (
     as_num INTEGER UNIQUE NOT NULL,
     wg_pub_key TEXT NOT NULL,
     wg_endpoint_addr TEXT NOT NULL,
-    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535)
+    wg_endpoint_port INTEGER NOT NULL CHECK(wg_endpoint_port BETWEEN 1 AND 65535),
+    user_link_local TEXT
 ```
 
 ## External resources
