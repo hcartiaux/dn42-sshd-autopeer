@@ -11,6 +11,7 @@ def get_local_config(as_id, peer_address):
 
     Parameters:
         as_id (str): The AS ID for which to retrieve the configuration.
+        ll_address (str); The link-local address on the wireguard local interface
 
     Returns:
         dict: A dictionary containing the local configuration.
