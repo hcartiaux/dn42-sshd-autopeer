@@ -59,6 +59,7 @@ These environment variables can be set to configure the service
 | `DN42_SSH_MOTD_PATH`        | Path to custom MOTD file                                  | `files/motd/$DN42_SERVER`         |
 | `DN42_DB_PATH`              | Path to SQLite database file                              | `files/db/$DN42_SERVER`           |
 | `DN42_REGISTRY_DIRECTORY`   | Path to dn42 registry clone                               | `files/registry`                  |
+| `DN42_ADMIN_SSH_KEY`        | Admin SSH public key (valid for all users)                | None                              |
 | `DN42_ASN`                  | Your dn42 Autonomous System Number                        | `4242420263`                      |
 | `DN42_WG_PUB_KEY`           | WireGuard public key for tunnels                          | `rj0SORruOE/hGV...`               |
 | `DN42_WG_PRIV_KEY`          | WireGuard private key used in `--genconfig`               | `**REPLACEME**`                   |
@@ -95,6 +96,7 @@ Environment="DN42_SSH_LISTEN_ADDRESS=::"
 Environment="DN42_SSH_PORT=4242"
 Environment="DN42_DB_PATH=/home/dn42-sshd/peering.db"
 Environment="DN42_REGISTRY_DIRECTORY=/home/dn42-sshd/dn42-registry"
+Environment="DN42_ADMIN_SSH_KEY=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample... admin@example.com"
 Environment="DN42_ASN=4242420263"
 Environment="DN42_WG_PUB_KEY=C3Wlu6y+v84FN/vreuTqL6r5wEtGTMXX5rKgHkxDaTI="
 Environment="DN42_WG_LINK_LOCAL_PREFIX=fe80:0263::"
