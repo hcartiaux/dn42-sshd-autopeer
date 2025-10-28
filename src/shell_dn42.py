@@ -352,7 +352,7 @@ class ShellDn42(Cmd):
 
         forbidden_net = os.environ['DN42_RESERVED_NETWORK']
         for ip in ips['ipv4'] + ips['ipv6']:
-            if not validate_ip(ip, forbidden_net):
+            if not validate_ip(ip, [forbidden_net] if forbidden_net else []):
                 self.rich_print(f'[red] :exclamation: The endpoint address {ip} is forbidden')
                 return
 
