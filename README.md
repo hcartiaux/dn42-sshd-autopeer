@@ -67,6 +67,7 @@ These environment variables can be set to configure the service
 | `DN42_WG_LOCAL_ADDRESS`     | Default IPv6 link-local address                           | `fe80::263`                       |
 | `DN42_WG_BASE_PORT`         | Base WireGuard port                                       | `52000`                           |
 | `DN42_RESERVED_NETWORK`     | Network where peering is restricted                       | None                              |
+| `DN42_PEER_IP_MODE`         | IP mode for peer endpoints: `ipv4`, `ipv6`, or `both`     | `ipv6`                            |
 | `DN42_BIRD_CONFIG_DIR`      | Place to generate the bird config files in  `--genconfig` | `files/bird`                      |
 | `DN42_WG_CONFIG_DIR`        | Place to generate the wg config files in  `--genconfig`   | `files/wireguard`                 |
 
@@ -103,6 +104,7 @@ Environment="DN42_WG_LINK_LOCAL_PREFIX=fe80:0263::"
 Environment="DN42_WG_LOCAL_ADDRESS=fe80::263"
 Environment="DN42_WG_BASE_PORT=52000"
 Environment="DN42_RESERVED_NETWORK=2001:0bc8:3feb::/48"
+Environment="DN42_PEER_IP_MODE=ipv6"
 
 # Security hardening
 ProtectSystem=full

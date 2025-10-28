@@ -11,7 +11,7 @@ from rich.markdown import Markdown
 from src.database_manager import DatabaseManager
 from src.utils_dn42 import as_maintained_by
 from src.utils_config import get_local_config, gen_wireguard_peer_config, gen_bird_peer_config, peer_status
-from src.utils_network import get_ipv6, validate_ipv6, validate_link_local_ipv6
+from src.utils_network import get_ips, validate_ip, validate_link_local_ipv6
 
 
 class ShellDn42(Cmd):
@@ -328,15 +328,32 @@ class ShellDn42(Cmd):
             return
 
         wg_endpoint_addr = self.rich_prompt("[bold blue]WireGuard endpoint address:[/] ")
-        ipv6_list = get_ipv6(wg_endpoint_addr)
-        if not ipv6_list:
-            self.rich_print('[red] :exclamation: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
+
+        ip_mode = os.environ['DN42_PEER_IP_MODE']
+        ips = get_ips(wg_endpoint_addr)
+
+        # Check if we have any valid IPs based on the configured mode
+        has_valid_ips = False
+        if ip_mode == 'ipv4' and ips['ipv4']:
+            has_valid_ips = True
+        elif ip_mode == 'ipv6' and ips['ipv6']:
+            has_valid_ips = True
+        elif ip_mode == 'both' and (ips['ipv4'] or ips['ipv6']):
+            has_valid_ips = True
+
+        if not has_valid_ips:
+            if ip_mode == 'ipv4':
+                self.rich_print('[red] :exclamation: The endpoint address should be either an IPv4 address or a domain name with an A record')
+            elif ip_mode == 'ipv6':
+                self.rich_print('[red] :exclamation: The endpoint address should be either an IPv6 address or a domain name with an AAAA record')
+            else:  # both
+                self.rich_print('[red] :exclamation: The endpoint address should be either an IP address or a domain name with A/AAAA records')
             return
 
         forbidden_net = os.environ['DN42_RESERVED_NETWORK']
-        for ipv6 in ipv6_list:
-            if not validate_ipv6(ipv6, [forbidden_net] if forbidden_net else []):
-                self.rich_print(f'[red] :exclamation: The endpoint address {ipv6} is forbidden')
+        for ip in ips['ipv4'] + ips['ipv6']:
+            if not validate_ip(ip, forbidden_net):
+                self.rich_print(f'[red] :exclamation: The endpoint address {ip} is forbidden')
                 return
 
         wg_endpoint_port = self.rich_prompt("[bold blue]WireGuard endpoint port   :[/] ")

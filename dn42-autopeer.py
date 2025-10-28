@@ -30,6 +30,7 @@ def main():
     os.environ['DN42_RESERVED_NETWORK'] = os.getenv('DN42_RESERVED_NETWORK', '')
     os.environ['DN42_WG_CONFIG_DIR'] = os.getenv('DN42_WG_CONFIG_DIR', 'files/wireguard')
     os.environ['DN42_BIRD_CONFIG_DIR'] = os.getenv('DN42_BIRD_CONFIG_DIR', 'files/bird')
+    os.environ['DN42_PEER_IP_MODE'] = os.getenv('DN42_PEER_IP_MODE', 'ipv6')
 
     # Command line parameters
     # Set up command-line argument parsing

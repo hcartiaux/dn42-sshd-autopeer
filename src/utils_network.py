@@ -1,40 +1,71 @@
-# Verify host conformity
+import os
 
-
-def get_ipv6(host):
+def get_ips(host):
     """
-    Retrieve the IPv6 address(es) associated with a host.
+    Retrieve IP addresses associated with a host based on the configured IP mode.
 
     Parameters:
         host (str): The hostname to resolve or IP address to validate.
 
     Returns:
-        list: A list containing the IPv6 address(es) of the host.
+        dict: A dictionary with 'ipv4' and 'ipv6' keys containing lists of addresses.
     """
+    ip_mode = os.environ['DN42_PEER_IP_MODE']
+
+    result = {'ipv4': [], 'ipv6': []}
+
+    if ip_mode in ['ipv4', 'both']:
+        result['ipv4'] = get_ips_by_mode(host, 'ipv4')
+
+    if ip_mode in ['ipv6', 'both']:
+        result['ipv6'] = get_ips_by_mode(host, 'ipv6')
+
+    return result
+
+
+def get_ips_by_mode(host, mode='ipv6'):
+    """
+    Retrieve the IP address(es) associated with a host.
+
+    Parameters:
+        host (str): The hostname to resolve or IP address to validate.
+        mode (str): ipv4 or ipv6
+
+    Returns:
+        list: A list containing the IP address(es) of the host.
+    """
+    import socket
+
+    if mode == 'ipv4':
+        socket_type = socket.AF_INET
+        record_type = 'A'
+    else:
+        socket_type = socket.AF_INET6
+        record_type = 'AAAA'
+
     try:
-        # Is host an IP address ? If yes, return  [host]
-        import socket
-        socket.inet_pton(socket.AF_INET6, host)
+        # Is host an IP address ? If yes, return [host]
+        socket.inet_pton(socket_type, host)
         return [host]
     except BaseException:
         pass
 
     try:
-        # if host is a domain name, returns all the AAAA records or [] if none
+        # if host is a domain name, return all the A or AAAA records or [] if none
         from dns import resolver
-        answers = resolver.resolve(host, 'AAAA')
+        answers = resolver.resolve(host, record_type)
         return [rdata.address for rdata in answers]
     except BaseException:
         return []
 
 
-def validate_ipv6(ip, forbidden_networks=[]):
+def validate_ip(ip, forbidden_networks=[]):
     """
-    Validate an IPv6 address, ensure that it is not private, configured locally or part
+    Validate an IP address, ensure that it is not private, configured locally or part
     of a list of private networks.
 
     Parameters:
-        ip (str): The IPv6 address to validate.
+        ip (str): The IP address to validate.
         forbidden_networks (list): A list of forbidden network prefixes.
 
     Returns:
@@ -56,7 +87,7 @@ def validate_ipv6(ip, forbidden_networks=[]):
         interfaces = psutil.net_if_addrs()
         for interface, addrs in interfaces.items():
             for addr in addrs:
-                if addr.family == socket.AF_INET6 and addr.address == ip:
+                if addr.family in (socket.AF_INET, socket.AF_INET6) and addr.address == ip:
                     is_local = True
                     break
 
@@ -68,6 +99,43 @@ def validate_ipv6(ip, forbidden_networks=[]):
                 break
 
         return not (is_private or is_local or is_forbidden)
+
+    except BaseException:
+        return False
+
+
+def validate_link_local_ipv6(ip):
+    """
+    Validate that an IPv6 address is a proper link-local address and doesn't conflict with local addresses.
+
+    Link-local addresses must be in the fe80::/10 range and must not be the same as the local system's
+    link-local address.
+
+    Parameters:
+        ip (str): The IPv6 address to validate.
+
+    Returns:
+        bool: True if the IP is a valid and non-conflicting link-local address, False otherwise.
+    """
+    try:
+        import ipaddress
+        import os
+
+        # Parse the IPv6 address
+        ip_obj = ipaddress.IPv6Address(ip)
+
+        # Check if it's in the link-local range (fe80::/10)
+        link_local_network = ipaddress.IPv6Network('fe80::/10')
+        if ip_obj not in link_local_network:
+            return False
+
+        # Check if it conflicts with the local link-local address
+        local_link_local = os.environ.get('DN42_WG_LOCAL_ADDRESS')
+        local_ip_obj = ipaddress.IPv6Address(local_link_local)
+        if ip_obj == local_ip_obj:
+            return False
+
+        return True
 
     except BaseException:
         return False
@@ -137,40 +205,3 @@ def get_latency_bgp_community(lat):
         return 8
     else:
         return 9
-
-
-def validate_link_local_ipv6(ip):
-    """
-    Validate that an IPv6 address is a proper link-local address and doesn't conflict with local addresses.
-
-    Link-local addresses must be in the fe80::/10 range and must not be the same as the local system's
-    link-local address.
-
-    Parameters:
-        ip (str): The IPv6 address to validate.
-
-    Returns:
-        bool: True if the IP is a valid and non-conflicting link-local address, False otherwise.
-    """
-    try:
-        import ipaddress
-        import os
-
-        # Parse the IPv6 address
-        ip_obj = ipaddress.IPv6Address(ip)
-
-        # Check if it's in the link-local range (fe80::/10)
-        link_local_network = ipaddress.IPv6Network('fe80::/10')
-        if ip_obj not in link_local_network:
-            return False
-
-        # Check if it conflicts with the local link-local address
-        local_link_local = os.environ.get('DN42_WG_LOCAL_ADDRESS')
-        local_ip_obj = ipaddress.IPv6Address(local_link_local)
-        if ip_obj == local_ip_obj:
-            return False
-
-        return True
-
-    except BaseException:
-        return False
