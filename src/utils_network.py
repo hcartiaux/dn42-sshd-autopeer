@@ -155,8 +155,16 @@ def get_latency(host):
     import re
     import subprocess
 
+    # Warm-up
+    subprocess.Popen(
+        ["ping", "-c", "1", "-W", "1", host],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+
+    # Measurement
     ping = subprocess.Popen(
-        ["ping", "-c", "4", host],
+        ["ping", "-c", "4", "-W", "1", host],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
