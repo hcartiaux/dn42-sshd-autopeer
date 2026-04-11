@@ -286,24 +286,28 @@ def gen_all_config(as_nums):
 
     # Update WireGuard 'current' symlink
     wg_current_dir = os.path.join(wg_base_dir, "current")
+    wg_tmp_link = os.path.join(wg_base_dir, f".current_tmp_{timestamp}")
     try:
-        if os.path.islink(wg_current_dir):
-            os.unlink(wg_current_dir)
-        os.symlink(timestamp, wg_current_dir)
+        os.symlink(timestamp, wg_tmp_link)
+        os.rename(wg_tmp_link, wg_current_dir)
         logging.info(f"Updated 'current' link in {wg_base_dir} to point to: {wg_version_dir}")
     except OSError as e:
         logging.exception(f"Error updating WireGuard symlink: {e}")
+        if os.path.islink(wg_tmp_link):
+            os.unlink(wg_tmp_link)
         return False
 
     # Update BIRD 'current' symlink
     bird_current_dir = os.path.join(bird_base_dir, "current")
+    bird_tmp_link = os.path.join(bird_base_dir, f".current_tmp_{timestamp}")
     try:
-        if os.path.islink(bird_current_dir):
-            os.unlink(bird_current_dir)
-        os.symlink(timestamp, bird_current_dir)
+        os.symlink(timestamp, bird_tmp_link)
+        os.rename(bird_tmp_link, bird_current_dir)
         logging.info(f"Updated 'current' link in {bird_base_dir} to point to: {bird_version_dir}")
     except OSError as e:
         logging.exception(f"Error updating BIRD symlink: {e}")
+        if os.path.islink(bird_current_dir):
+            os.unlink(bird_current_dir)
         return False
 
     return True
