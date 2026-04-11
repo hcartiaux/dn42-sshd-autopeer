@@ -134,12 +134,15 @@ def gen_wireguard_local_config(as_num):
         as_num (str): The AS number.
 
     Returns:
-        str: The WireGuard configuration as a string.
+        Optional[str]: The WireGuard configuration as a string, or None if the peer was not found.
     """
     from src.database_manager import DatabaseManager
 
     db_manager = DatabaseManager()
     peer_config = db_manager.get_peer_config(as_num)
+    if peer_config is None:
+        logging.warning(f"Peer AS{as_num} was removed during config generation, skipping")
+        return None
     local_config = get_local_config(peer_config['id'], peer_config['ll_address'])
 
     wireguard = f"""
@@ -166,7 +169,7 @@ def gen_bird_local_config(as_num):
         as_num (str): The AS number.
 
     Returns:
-        str: The BIRD configuration as a string.
+        Optional[str]: The BIRD configuration as a string, or None if the peer was not found.
     """
 
     from src.utils_network import get_latency, get_latency_bgp_community
@@ -174,7 +177,9 @@ def gen_bird_local_config(as_num):
 
     db_manager = DatabaseManager()
     peer_config = db_manager.get_peer_config(as_num)
-
+    if peer_config is None:
+        logging.warning(f"Peer AS{as_num} was removed during config generation, skipping")
+        return None
     latency = get_latency(peer_config['wg_endpoint_addr'])
     community = get_latency_bgp_community(latency)
 
@@ -250,6 +255,8 @@ def gen_all_config(as_nums):
     for as_num in as_nums:
         # Generate and write WireGuard config
         wg_config = gen_wireguard_local_config(as_num)
+        if wg_config is None:
+            continue # Peer removed during generation, skip
         wg_filename = f"wg-as{as_num}.conf"
         wg_filepath = os.path.join(wg_version_dir, wg_filename)
         try:
@@ -262,6 +269,8 @@ def gen_all_config(as_nums):
 
         # Generate and write BIRD config
         bird_config = gen_bird_local_config(as_num)
+        if bird_config is None:
+            continue # Peer removed during generation, skip
         bird_filename = f"ebgp_as{as_num}"
         bird_filepath = os.path.join(bird_version_dir, bird_filename)
         try:
