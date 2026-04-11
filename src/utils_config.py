@@ -11,7 +11,7 @@ def get_local_config(as_id, peer_address):
 
     Parameters:
         as_id (str): The AS ID for which to retrieve the configuration.
-        ll_address (str); The link-local address on the wireguard local interface
+        peer_address (str): The link-local address on the WireGuard local interface.
 
     Returns:
         dict: A dictionary containing the local configuration.
@@ -211,12 +211,12 @@ def gen_all_config(as_nums):
     the newly created version.
 
     Args:
-        as_nums: A list of autonomous system (AS) numbers to generate
+        as_nums (list): A list of autonomous system (AS) numbers to generate
             configurations for.
 
     Returns:
-        True if all configurations were generated and links updated
-        successfully, False otherwise.
+        bool: True if all configurations were generated and links updated
+            successfully, False otherwise.
     """
 
     wg_base_dir = os.environ.get("DN42_WG_CONFIG_DIR")
