@@ -115,7 +115,7 @@ class SSHServerBase(ABC):
                 thread.start()
                 logging.info(f"[SSHServerBase] Started thread {thread.ident} for {username}@{addr}")
 
-            except socket.timeout:
+            except TimeoutError:
                 pass
 
     @abstractmethod
