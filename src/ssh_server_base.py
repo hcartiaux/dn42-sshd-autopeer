@@ -19,6 +19,9 @@ class SSHServerBase(ABC):
         _listen_thread (threading.Thread): Thread responsible for handling incoming connections.
     """
 
+    # Maximum time (in seconds) to open a channel
+    CHANNEL_TIMEOUT = 60
+
     def __init__(self, server_interface):
         """
         Initialize the SSH server base infrastructure.
@@ -102,7 +105,17 @@ class SSHServerBase(ABC):
                     logging.exception("[SSHServerBase] Unmanaged exception")
                     continue
 
-                channel = session.accept()
+                # Wait for a channel and give up if the session dies
+                # or the timeout is reached.
+                channel = None
+                retry = 0
+                while session.is_active() and retry <= self.CHANNEL_TIMEOUT:
+                    channel = session.accept(1)
+                    if channel is not None:
+                        break
+                    else:
+                        retry += 1
+
                 if channel is None:
                     logging.warning(f"[SSHServerBase] No channel request from {addr}")
                     session.close()
